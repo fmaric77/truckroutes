@@ -3,22 +3,47 @@ import { useState } from 'react';
 const Drivers = ({ drivers = [], setDrivers }) => {
   const [showDriverInput, setShowDriverInput] = useState(false);
   const [showDrivers, setShowDrivers] = useState(false);
-  const [driverInput, setDriverInput] = useState({ ime: '', prezime: '', oib: '', lozinka: '' });
+  const [driverInput, setDriverInput] = useState({ ime_vozaca: '', prezime_vozaca: '', oib_vozaca: '', lozinka_vozaca: '' });
+  const [errors, setErrors] = useState({});
+
+  const validateDriverInput = () => {
+    const newErrors = {};
+    if (!driverInput.ime_vozaca) {
+      newErrors.ime_vozaca = 'Ime je obavezno.';
+      alert(newErrors.ime_vozaca);
+    }
+    if (!driverInput.prezime_vozaca) {
+      newErrors.prezime_vozaca = 'Prezime je obavezno.';
+      alert(newErrors.prezime_vozaca);
+    }
+    if (!driverInput.oib_vozaca) {
+      newErrors.oib_vozaca = 'OIB je obavezan.';
+      alert(newErrors.oib_vozaca);
+    }
+    if (!driverInput.lozinka_vozaca) {
+      newErrors.lozinka_vozaca = 'Lozinka je obavezna.';
+      alert(newErrors.lozinka_vozaca);
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleAddDriver = async () => {
-    const { ime, prezime, oib, lozinka } = driverInput;
+    if (!validateDriverInput()) return;
+
+    const { ime_vozaca, prezime_vozaca, oib_vozaca, lozinka_vozaca } = driverInput;
     const res = await fetch('/api/vozaci', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ ime, prezime, oib, lozinka }),
+      body: JSON.stringify({ ime_vozaca, prezime_vozaca, oib_vozaca, lozinka_vozaca }),
     });
     if (res.ok) {
       const newDriver = await res.json();
       setDrivers([...drivers, newDriver]);
       setShowDriverInput(false);
-      setDriverInput({ ime: '', prezime: '', oib: '', lozinka: '' });
+      setDriverInput({ ime_vozaca: '', prezime_vozaca: '', oib_vozaca: '', lozinka_vozaca: '' });
     }
   };
 
@@ -37,45 +62,49 @@ const Drivers = ({ drivers = [], setDrivers }) => {
 
   return (
     <div className="mt-8">
-      <h2 className="text-xl font-bold">Drivers</h2>
+      <h2 className="text-xl font-bold">Vozači</h2>
       <button onClick={() => setShowDriverInput(true)} className="bg-blue-500 text-white p-2 mt-2 rounded">
-        Add New Driver
+        Dodaj novog vozača
       </button>
       <button onClick={() => setShowDrivers(!showDrivers)} className="bg-blue-500 text-white p-2 mt-2 rounded ml-2">
-        {showDrivers ? 'Hide' : 'Show'} Drivers
+        {showDrivers ? 'Sakrij' : 'Prikaži'} vozače
       </button>
       {showDriverInput && (
         <div className="mt-4">
           <input
             type="text"
-            placeholder="First Name"
-            value={driverInput.ime}
-            onChange={(e) => setDriverInput({ ...driverInput, ime: e.target.value })}
+            placeholder="Ime"
+            value={driverInput.ime_vozaca}
+            onChange={(e) => setDriverInput({ ...driverInput, ime_vozaca: e.target.value })}
             className="border p-2 mr-2"
+            style={{ backgroundColor: 'black', color: 'white' }}
           />
           <input
             type="text"
-            placeholder="Last Name"
-            value={driverInput.prezime}
-            onChange={(e) => setDriverInput({ ...driverInput, prezime: e.target.value })}
+            placeholder="Prezime"
+            value={driverInput.prezime_vozaca}
+            onChange={(e) => setDriverInput({ ...driverInput, prezime_vozaca: e.target.value })}
             className="border p-2 mr-2"
+            style={{ backgroundColor: 'black', color: 'white' }}
           />
           <input
             type="text"
             placeholder="OIB"
-            value={driverInput.oib}
-            onChange={(e) => setDriverInput({ ...driverInput, oib: e.target.value })}
+            value={driverInput.oib_vozaca}
+            onChange={(e) => setDriverInput({ ...driverInput, oib_vozaca: e.target.value })}
             className="border p-2 mr-2"
+            style={{ backgroundColor: 'black', color: 'white' }}
           />
           <input
             type="password"
-            placeholder="Password"
-            value={driverInput.lozinka}
-            onChange={(e) => setDriverInput({ ...driverInput, lozinka: e.target.value })}
+            placeholder="Lozinka"
+            value={driverInput.lozinka_vozaca}
+            onChange={(e) => setDriverInput({ ...driverInput, lozinka_vozaca: e.target.value })}
             className="border p-2 mr-2"
+            style={{ backgroundColor: 'black', color: 'white' }}
           />
           <button onClick={handleAddDriver} className="bg-green-500 text-white p-2 rounded">
-            Submit
+            Pošalji
           </button>
         </div>
       )}
@@ -83,8 +112,8 @@ const Drivers = ({ drivers = [], setDrivers }) => {
         <ul className="mt-4">
           {drivers.map(driver => (
             <li key={driver.id} className="flex justify-between items-center border-b py-2">
-              {driver.ime} {driver.prezime} - Status: {driver.status}
-              <button onClick={() => handleRemoveDriver(driver.id)} className="text-red-500 ml-2">Remove</button>
+              {driver.ime_vozaca} {driver.prezime_vozaca} - Status: {driver.status}
+              <button onClick={() => handleRemoveDriver(driver.id)} className="text-red-500 ml-2">Ukloni</button>
             </li>
           ))}
         </ul>

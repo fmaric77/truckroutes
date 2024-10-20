@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getConnection } from '../../lib/db';
+import bcrypt from 'bcrypt';
 
 export async function GET() {
   const connection = await getConnection();
@@ -13,11 +14,12 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   const connection = await getConnection();
-  const { ime, prezime, oib, lozinka } = await request.json();
+  const { ime_vozaca, prezime_vozaca, oib_vozaca, lozinka_vozaca } = await request.json();
 
   try {
-    const [result]: any = await connection.execute('INSERT INTO Vozaci (ime, prezime, oib, lozinka) VALUES (?, ?, ?, ?)', [ime, prezime, oib, lozinka]);
-    return NextResponse.json({ id: result.insertId, ime, prezime, oib }, { status: 201 });
+    const hashedLozinka = await bcrypt.hash(lozinka_vozaca, 10);
+    const [result]: any = await connection.execute('INSERT INTO Vozaci (ime_vozaca, prezime_vozaca, oib_vozaca, lozinka_vozaca) VALUES (?, ?, ?, ?)', [ime_vozaca, prezime_vozaca, oib_vozaca, hashedLozinka]);
+    return NextResponse.json({ id: result.insertId, ime_vozaca, prezime_vozaca, oib_vozaca }, { status: 201 });
   } catch (error) {
     return NextResponse.json({ error: 'Failed to add vozac' }, { status: 500 });
   }

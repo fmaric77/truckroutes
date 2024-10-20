@@ -5,7 +5,15 @@ export async function GET() {
   const connection = await getConnection();
   try {
     const [rows] = await connection.execute('SELECT * FROM Kamioni');
-    return NextResponse.json(rows);
+    const formattedRows = rows.map(row => ({
+      ...row,
+      datum_registracije: new Date(row.datum_registracije).toLocaleDateString('en-GB', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      }).replace(/\//g, '.')
+    }));
+    return NextResponse.json(formattedRows);
   } catch (error) {
     return NextResponse.json({ error: 'Failed to fetch kamioni' }, { status: 500 });
   }

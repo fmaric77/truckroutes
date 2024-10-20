@@ -4,8 +4,31 @@ const Trucks = ({ trucks, setTrucks }) => {
   const [showTruckInput, setShowTruckInput] = useState(false);
   const [showTrucks, setShowTrucks] = useState(false);
   const [truckInput, setTruckInput] = useState({ registracija: '', datum_registracije: '' });
+  const [errors, setErrors] = useState({});
+
+  const validateTruckInput = () => {
+    const newErrors = {};
+    const currentDate = new Date().toISOString().split('T')[0];
+
+    if (!truckInput.registracija) {
+      newErrors.registracija = 'Registracija je obavezna.';
+    } else if (!/^[a-zA-Z0-9]{8}$/.test(truckInput.registracija)) {
+      newErrors.registracija = 'Registracija mora imati točno 8 alfanumeričkih znakova.';
+    }
+
+    if (!truckInput.datum_registracije) {
+      newErrors.datum_registracije = 'Datum registracije je obavezan.';
+    } else if (truckInput.datum_registracije < currentDate) {
+      newErrors.datum_registracije = 'Datum registracije ne može biti u prošlosti.';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleAddTruck = async () => {
+    if (!validateTruckInput()) return;
+
     const { registracija, datum_registracije } = truckInput;
     const res = await fetch('/api/kamioni', {
       method: 'POST',
@@ -37,31 +60,35 @@ const Trucks = ({ trucks, setTrucks }) => {
 
   return (
     <div className="mt-8">
-      <h2 className="text-xl font-bold">Trucks</h2>
+      <h2 className="text-xl font-bold">Kamioni</h2>
       <button onClick={() => setShowTruckInput(true)} className="bg-blue-500 text-white p-2 mt-2 rounded">
-        Add New Truck
+        Dodaj novi kamion
       </button>
       <button onClick={() => setShowTrucks(!showTrucks)} className="bg-blue-500 text-white p-2 mt-2 rounded ml-2">
-        {showTrucks ? 'Hide' : 'Show'} Trucks
+        {showTrucks ? 'Sakrij' : 'Prikaži'} kamione
       </button>
       {showTruckInput && (
         <div className="mt-4">
           <input
             type="text"
-            placeholder="Registration"
+            placeholder="Registracija"
             value={truckInput.registracija}
             onChange={(e) => setTruckInput({ ...truckInput, registracija: e.target.value })}
             className="border p-2 mr-2"
+            style={{ backgroundColor: 'black', color: 'white' }}
           />
+          {errors.registracija && <p className="text-red-500">{errors.registracija}</p>}
           <input
             type="date"
-            placeholder="Registration Date"
+            placeholder="Datum registracije"
             value={truckInput.datum_registracije}
             onChange={(e) => setTruckInput({ ...truckInput, datum_registracije: e.target.value })}
             className="border p-2 mr-2"
+            style={{ backgroundColor: 'black', color: 'white' }}
           />
+          {errors.datum_registracije && <p className="text-red-500">{errors.datum_registracije}</p>}
           <button onClick={handleAddTruck} className="bg-green-500 text-white p-2 rounded">
-            Submit
+            Pošalji
           </button>
         </div>
       )}
@@ -70,7 +97,7 @@ const Trucks = ({ trucks, setTrucks }) => {
           {trucks.map(truck => (
             <li key={truck.id} className="flex justify-between items-center border-b py-2">
               {truck.registracija} - {truck.datum_registracije}
-              <button onClick={() => handleRemoveTruck(truck.id)} className="text-red-500 ml-2">Remove</button>
+              <button onClick={() => handleRemoveTruck(truck.id)} className="text-red-500 ml-2">Ukloni</button>
             </li>
           ))}
         </ul>
