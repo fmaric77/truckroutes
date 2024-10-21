@@ -74,6 +74,11 @@ const Travels = ({ putovanja, setPutovanja, drivers, trucks, spremneRute, stores
     }
   };
 
+  const getDriverName = (vozac_id) => {
+    const driver = drivers.find(driver => driver.id === vozac_id);
+    return driver ? `${driver.ime_vozaca} ${driver.prezime_vozaca}` : 'Nepoznato';
+  };
+
   return (
     <div className="mt-8">
       <h2 className="text-xl font-bold">Putovanja</h2>
@@ -100,7 +105,7 @@ const Travels = ({ putovanja, setPutovanja, drivers, trucks, spremneRute, stores
             <option value="">Odaberi vozača</option>
             {drivers.map(driver => (
               <option key={driver.id} value={driver.id}>
-                {driver.ime} {driver.prezime}
+                {driver.ime_vozaca} {driver.prezime_vozaca}
               </option>
             ))}
           </select>

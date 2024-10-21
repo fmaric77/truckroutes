@@ -9,7 +9,7 @@ const Route = ({ routes, setRoutes, stores }) => {
   const validateRouteInput = () => {
     const newErrors = {};
     if (routeInput.selectedStores.some(store => !store)) {
-      newErrors.selectedStores = 'All store fields must be selected.';
+      newErrors.selectedStores = 'Sva polja trgovina moraju biti odabrana.';
       alert(newErrors.selectedStores);
     }
     setErrors(newErrors);
@@ -73,18 +73,18 @@ const Route = ({ routes, setRoutes, stores }) => {
 
   return (
     <div className="mt-8">
-      <h2 className="text-xl font-bold">Routes</h2>
+      <h2 className="text-xl font-bold">Rute</h2>
       <button onClick={() => setShowRouteInput(true)} className="bg-blue-500 text-white p-2 mt-2 rounded">
-        Add New Route
+        Dodaj novu rutu
       </button>
       <button onClick={() => setShowRoutes(!showRoutes)} className="bg-blue-500 text-white p-2 mt-2 rounded ml-2">
-        {showRoutes ? 'Hide' : 'Show'} Routes
+        {showRoutes ? 'Sakrij' : 'Prikaži'} rute
       </button>
       {showRouteInput && (
         <div className="mt-4">
           <input
             type="text"
-            placeholder="Description (optional)"
+            placeholder="Opis (opcionalno)"
             value={routeInput.opis}
             onChange={(e) => setRouteInput({ ...routeInput, opis: e.target.value })}
             className="border p-2 mr-2"
@@ -97,24 +97,24 @@ const Route = ({ routes, setRoutes, stores }) => {
                 onChange={(e) => handleStoreChange(index, e.target.value)}
                 className="border p-2 mr-2 bg-black text-white"
               >
-                <option value="">Select Store</option>
+                <option value="">Odaberi trgovinu</option>
                 {stores.map(store => (
                   <option key={store.id} value={store.id}>
                     {store.ime_trgovine}
                   </option>
                 ))}
               </select>
-              <button onClick={() => handleRemoveStoreField(index)} className="bg-red-500 text-white p-2 rounded">
-                Remove
-              </button>
+              <span onClick={() => handleRemoveStoreField(index)} className="text-red-500 cursor-pointer">
+                Ukloni
+              </span>
             </div>
           ))}
           {errors.selectedStores && <p className="text-red-500">{errors.selectedStores}</p>}
           <button onClick={handleAddStoreField} className="bg-green-500 text-white p-2 rounded">
-            Add Store
+            Dodaj trgovinu
           </button>
           <button onClick={handleAddRoute} className="bg-green-500 text-white p-2 rounded ml-2">
-            Submit
+            Pošalji
           </button>
         </div>
       )}
@@ -125,8 +125,10 @@ const Route = ({ routes, setRoutes, stores }) => {
               {route.ruta.split(', ').map(storeName => {
                 const store = stores.find(s => s.ime_trgovine === storeName);
                 return store ? `${store.ime_trgovine}, ${store.adresa}` : storeName;
-              }).join(' | ')} - {route.opis || 'No description'}
-              <button onClick={() => handleRemoveRoute(route.id)} className="text-red-500 ml-2">Remove</button>
+              }).join(' | ')} - {route.opis || 'Nema opisa'}
+              <span onClick={() => handleRemoveRoute(route.id)} className="text-red-500 cursor-pointer ml-2">
+                Ukloni
+              </span>
             </li>
           ))}
         </ul>

@@ -60,6 +60,21 @@ const Drivers = ({ drivers = [], setDrivers }) => {
     }
   };
 
+  const handleToggleStatus = async (id, currentStatus) => {
+    const newStatus = currentStatus === 'aktivan' ? 'neaktivan' : 'aktivan';
+    const res = await fetch('/api/vozaci', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ id, status: newStatus }),
+    });
+    if (res.ok) {
+      const updatedDriver = await res.json();
+      setDrivers(drivers.map(driver => driver.id === id ? updatedDriver : driver));
+    }
+  };
+
   return (
     <div className="mt-8">
       <h2 className="text-xl font-bold">Vozači</h2>
@@ -112,7 +127,13 @@ const Drivers = ({ drivers = [], setDrivers }) => {
         <ul className="mt-4">
           {drivers.map(driver => (
             <li key={driver.id} className="flex justify-between items-center border-b py-2">
-              {driver.ime_vozaca} {driver.prezime_vozaca} - Status: {driver.status}
+              {driver.ime_vozaca} {driver.prezime_vozaca} - Status: 
+              <span 
+                onClick={() => handleToggleStatus(driver.id, driver.status)} 
+                className="cursor-pointer text-blue-500"
+              >
+                {driver.status}
+              </span>
               <button onClick={() => handleRemoveDriver(driver.id)} className="text-red-500 ml-2">Ukloni</button>
             </li>
           ))}

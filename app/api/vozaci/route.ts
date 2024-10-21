@@ -36,3 +36,16 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: 'Failed to delete vozac' }, { status: 500 });
   }
 }
+
+export async function PUT(request: NextRequest) {
+  const connection = await getConnection();
+  const { id, status } = await request.json();
+
+  try {
+    await connection.execute('UPDATE Vozaci SET status = ? WHERE id = ?', [status, id]);
+    const [updatedDriver]: [Array<{ [key: string]: any }>] = await connection.execute('SELECT * FROM Vozaci WHERE id = ?', [id]);
+    return NextResponse.json(updatedDriver[0]);
+  } catch (error) {
+    return NextResponse.json({ error: 'Failed to update vozac status' }, { status: 500 });
+  }
+}
