@@ -1,6 +1,21 @@
 import { useState } from 'react';
 
-const Drivers = ({ drivers = [], setDrivers }) => {
+const logAction = async (action, adminId, driverInfo) => {
+  console.log('Logging action:', action, 'Admin ID:', adminId, 'Driver Info:', driverInfo);
+  try {
+    await fetch('/api/logs', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ action, adminId, ...driverInfo }),
+    });
+  } catch (error) {
+    console.error('Error logging action:', error);
+  }
+};
+
+const Drivers = ({ drivers = [], setDrivers, adminId }) => {
   const [showDriverInput, setShowDriverInput] = useState(false);
   const [showDrivers, setShowDrivers] = useState(false);
   const [driverInput, setDriverInput] = useState({ ime_vozaca: '', prezime_vozaca: '', oib_vozaca: '', lozinka_vozaca: '' });
@@ -44,10 +59,12 @@ const Drivers = ({ drivers = [], setDrivers }) => {
       setDrivers([...drivers, newDriver]);
       setShowDriverInput(false);
       setDriverInput({ ime_vozaca: '', prezime_vozaca: '', oib_vozaca: '', lozinka_vozaca: '' });
+      await logAction(`Vozac dodan: ${ime_vozaca} ${prezime_vozaca} (OIB: ${oib_vozaca})`, adminId, { ime_vozaca, prezime_vozaca, oib_vozaca });
     }
   };
 
   const handleRemoveDriver = async (id) => {
+    const driverToRemove = drivers.find(driver => driver.id === id);
     const res = await fetch('/api/vozaci', {
       method: 'DELETE',
       headers: {
@@ -57,6 +74,7 @@ const Drivers = ({ drivers = [], setDrivers }) => {
     });
     if (res.ok) {
       setDrivers(drivers.filter(driver => driver.id !== id));
+      await logAction(`Vozac uklonjen: ${driverToRemove.ime_vozaca} ${driverToRemove.prezime_vozaca} (OIB: ${driverToRemove.oib_vozaca})`, adminId, { ime_vozaca: driverToRemove.ime_vozaca, prezime_vozaca: driverToRemove.prezime_vozaca, oib_vozaca: driverToRemove.oib_vozaca });
     }
   };
 
@@ -72,6 +90,7 @@ const Drivers = ({ drivers = [], setDrivers }) => {
     if (res.ok) {
       const updatedDriver = await res.json();
       setDrivers(drivers.map(driver => driver.id === id ? updatedDriver : driver));
+      await logAction(`Status promijenjen za: ${updatedDriver.ime_vozaca} ${updatedDriver.prezime_vozaca} (OIB: ${updatedDriver.oib_vozaca}) na ${newStatus}`, adminId, { ime_vozaca: updatedDriver.ime_vozaca, prezime_vozaca: updatedDriver.prezime_vozaca, oib_vozaca: updatedDriver.oib_vozaca, status: newStatus });
     }
   };
 

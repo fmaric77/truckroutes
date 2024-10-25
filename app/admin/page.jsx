@@ -1,3 +1,5 @@
+// app/admin/page.jsx
+
 "use client";
 
 import { useEffect, useState } from 'react';
@@ -8,6 +10,7 @@ import Stores from './Stores';
 import Travels from './Travels';
 import Route from './Rute';
 import Skladista from './Skladista'; // Import the Skladista component
+import Link from 'next/link';
 
 const AdminPanel = () => {
   const [admin, setAdmin] = useState(null);
@@ -79,9 +82,24 @@ const AdminPanel = () => {
     fetchData();
   }, [router]);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     localStorage.removeItem('admin');
+    await logAction('Admin logged out', admin.id);
     router.push('/');
+  };
+
+  const logAction = async (action, adminId) => {
+    try {
+      await fetch('/api/logs', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ action, adminId }),
+      });
+    } catch (error) {
+      console.error('Error logging action:', error);
+    }
   };
 
   return (
@@ -94,6 +112,16 @@ const AdminPanel = () => {
         >
           Odjava
         </button>
+        <nav className="mb-6">
+          <ul className="flex flex-col space-y-2">
+            <li>
+              <Link legacyBehavior href="/admin/logs">
+                <a className="text-blue-400 hover:underline">Admin Action Logs</a>
+              </Link>
+            </li>
+            {/* Add other navigation links here */}
+          </ul>
+        </nav>
         
         {admin && (
           <div className="mt-8">
@@ -102,22 +130,22 @@ const AdminPanel = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div className="bg-gray-700 p-4 rounded-lg shadow-md">
-                <Trucks trucks={trucks} setTrucks={setTrucks} />
+                <Trucks trucks={trucks} setTrucks={setTrucks} adminId={admin.id}/>
               </div>
 
               <div className="bg-gray-700 p-4 rounded-lg shadow-md">
-                <Drivers drivers={drivers} setDrivers={setDrivers} />
+                <Drivers drivers={drivers} setDrivers={setDrivers} adminId={admin.id}/>
               </div>
 
               <div className="bg-gray-700 p-4 rounded-lg shadow-md">
-                <Stores stores={stores} setStores={setStores} />
+                <Stores stores={stores} setStores={setStores} adminId={admin.id}/>
               </div>
 
               <div className="bg-gray-700 p-4 rounded-lg shadow-md">
-                <Route routes={routes} setRoutes={setRoutes} stores={stores} />
+                <Route routes={routes} setRoutes={setRoutes} stores={stores} adminId={admin.id}/>
               </div>
               <div className="bg-gray-700 p-4 rounded-lg shadow-md">
-                <Skladista skladista={skladista} setSkladista={setSkladista} />
+                <Skladista skladista={skladista} setSkladista={setSkladista} adminId={admin.id} />
               </div>
 
               <div className="bg-gray-700 p-4 rounded-lg shadow-md col-span-1 md:col-span-2 lg:col-span-3">

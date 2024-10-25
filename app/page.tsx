@@ -1,4 +1,4 @@
-// app/login/page.tsx
+// app/page.tsx
 
 "use client";
 
@@ -20,7 +20,7 @@ const LoginPage = () => {
     }
 
     try {
-      console.log('Slanje zahtjeva za prijavu:', { username, password });
+      console.log('Sl zahtjeva za prijavu:', { username, password });
 
       const res = await fetch('/api/login', {
         method: 'POST',
@@ -41,11 +41,28 @@ const LoginPage = () => {
       // Pohrani informacije o administratoru u lokalnu pohranu
       localStorage.setItem('admin', JSON.stringify(data.admin));
 
+      // Log the login action
+      await logAction('Admin logged in', data.admin.id);
+
       // Preusmjeri na administratorsku ploču
       router.push('/admin'); // Prilagodite putanju do vaše administratorske ploče
     } catch (error) {
       console.error('Greška pri prijavi:', error);
       setError((error as Error).message);
+    }
+  };
+
+  const logAction = async (action: string, adminId: number) => {
+    try {
+      await fetch('/api/logs', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ action, adminId }),
+      });
+    } catch (error) {
+      console.error('Error logging action:', error);
     }
   };
 

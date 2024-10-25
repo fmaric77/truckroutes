@@ -1,6 +1,21 @@
 import { useState } from 'react';
 
-const Route = ({ routes, setRoutes, stores }) => {
+const logAction = async (action, adminId, routeInfo) => {
+  console.log('Logging action:', action, 'Admin ID:', adminId, 'Route Info:', routeInfo);
+  try {
+    await fetch('/api/logs', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ action, adminId, ...routeInfo }),
+    });
+  } catch (error) {
+    console.error('Error logging action:', error);
+  }
+};
+
+const Route = ({ routes, setRoutes, stores, adminId }) => {
   const [showRouteInput, setShowRouteInput] = useState(false);
   const [showRoutes, setShowRoutes] = useState(false);
   const [routeInput, setRouteInput] = useState({ opis: '', selectedStores: [''] });
@@ -16,10 +31,18 @@ const Route = ({ routes, setRoutes, stores }) => {
     return Object.keys(newErrors).length === 0;
   };
 
+  const getStoreNames = (storeIds) => {
+    return storeIds.map(storeId => {
+      const store = stores.find(s => s.id === storeId);
+      return store ? store.ime_trgovine : storeId;
+    });
+  };
+
   const handleAddRoute = async () => {
     if (!validateRouteInput()) return;
 
     const { opis, selectedStores } = routeInput;
+    const storeNames = getStoreNames(selectedStores);
     const res = await fetch('/api/rute', {
       method: 'POST',
       headers: {
@@ -32,6 +55,25 @@ const Route = ({ routes, setRoutes, stores }) => {
       setRoutes([...routes, newRoute]);
       setShowRouteInput(false);
       setRouteInput({ opis: '', selectedStores: [''] });
+      await logAction(`Ruta dodana: ${opis || 'Nema opisa'} (Trgovine: ${storeNames.join(', ')})`, adminId, { opis, selectedStores: storeNames });
+    }
+  };
+
+  const handleRemoveRoute = async (id) => {
+    const routeToRemove = routes.find(route => route.id === id);
+    if (!routeToRemove) return;
+
+    const storeNames = getStoreNames(routeToRemove.selectedStores || []);
+    const res = await fetch('/api/rute', {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ id }),
+    });
+    if (res.ok) {
+      setRoutes(routes.filter(route => route.id !== id));
+      await logAction(`Ruta uklonjena: ${routeToRemove.opis || 'Nema opisa'}`, adminId, { opis: routeToRemove.opis, selectedStores: storeNames });
     }
   };
 
@@ -56,19 +98,6 @@ const Route = ({ routes, setRoutes, stores }) => {
       ...routeInput,
       selectedStores: newSelectedStores,
     });
-  };
-
-  const handleRemoveRoute = async (id) => {
-    const res = await fetch('/api/rute', {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ id }),
-    });
-    if (res.ok) {
-      setRoutes(routes.filter(route => route.id !== id));
-    }
   };
 
   return (
