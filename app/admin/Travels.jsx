@@ -1,6 +1,21 @@
 import { useState, useEffect } from 'react';
 
-const Travels = ({ putovanja, setPutovanja, drivers, trucks, spremneRute, stores }) => {
+const logAction = async (action, adminId, putovanjeInfo) => {
+  console.log('Logging action:', action, 'Admin ID:', adminId, 'Putovanje Info:', putovanjeInfo);
+  try {
+    await fetch('/api/logs', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ action, adminId, ...putovanjeInfo }),
+    });
+  } catch (error) {
+    console.error('Error logging action:', error);
+  }
+};
+
+const Travels = ({ putovanja, setPutovanja, drivers, trucks, spremneRute, stores, adminId }) => {
   const [showPutovanja, setShowPutovanja] = useState(false);
   const [showPutovanjeInput, setShowPutovanjeInput] = useState(false);
   const [putovanjeInput, setPutovanjeInput] = useState({ datum: '', vozac_id: '', kamion_id: '', ruta_id: '' });
@@ -28,6 +43,21 @@ const Travels = ({ putovanja, setPutovanja, drivers, trucks, spremneRute, stores
     return Object.keys(newErrors).length === 0;
   };
 
+  const getDriverName = (vozac_id) => {
+    const driver = drivers.find(driver => driver.id === vozac_id);
+    return driver ? `${driver.ime_vozaca} ${driver.prezime_vozaca}` : 'Nepoznato';
+  };
+
+  const getTruckRegistration = (kamion_id) => {
+    const truck = trucks.find(truck => truck.id === kamion_id);
+    return truck ? truck.registracija : 'Nepoznato';
+  };
+
+  const getRouteName = (ruta_id) => {
+    const ruta = spremneRute.find(ruta => ruta.id === ruta_id);
+    return ruta ? ruta.ruta : 'Nepoznato';
+  };
+
   const handleAddPutovanje = async () => {
     if (!validatePutovanjeInput()) return;
 
@@ -44,6 +74,13 @@ const Travels = ({ putovanja, setPutovanja, drivers, trucks, spremneRute, stores
       setPutovanja([...putovanja, newPutovanje]);
       setPutovanjeInput({ datum: '', vozac_id: '', kamion_id: '', ruta_id: '' });
       setShowPutovanjeInput(false);
+      await logAction(`Putovanje dodano: ${newPutovanje.id}`, adminId, {
+        id: newPutovanje.id,
+        datum,
+        vozac: getDriverName(vozac_id),
+        kamion: getTruckRegistration(kamion_id),
+        ruta: getRouteName(ruta_id),
+      });
     }
   };
 
@@ -58,10 +95,20 @@ const Travels = ({ putovanja, setPutovanja, drivers, trucks, spremneRute, stores
     if (res.ok) {
       const updatedPutovanje = await res.json();
       setPutovanja(putovanja.map(p => (p.id === id ? updatedPutovanje : p)));
+      await logAction(`Putovanje ažurirano: ${datum}`, adminId, {
+        id,
+        datum,
+        vozac: getDriverName(vozac_id),
+        kamion: getTruckRegistration(kamion_id),
+        ruta: getRouteName(ruta_id),
+      });
     }
   };
 
   const handleRemovePutovanje = async (id) => {
+    const putovanjeToRemove = putovanja.find(p => p.id === id);
+    if (!putovanjeToRemove) return;
+
     const res = await fetch('/api/putovanja', {
       method: 'DELETE',
       headers: {
@@ -71,12 +118,14 @@ const Travels = ({ putovanja, setPutovanja, drivers, trucks, spremneRute, stores
     });
     if (res.ok) {
       setPutovanja(putovanja.filter(p => p.id !== id));
+      await logAction(`Putovanje uklonjeno: ${id}`, adminId, {
+        id,
+        datum: putovanjeToRemove.datum,
+        vozac: getDriverName(putovanjeToRemove.vozac_id),
+        kamion: getTruckRegistration(putovanjeToRemove.kamion_id),
+        ruta: getRouteName(putovanjeToRemove.ruta_id),
+      });
     }
-  };
-
-  const getDriverName = (vozac_id) => {
-    const driver = drivers.find(driver => driver.id === vozac_id);
-    return driver ? `${driver.ime_vozaca} ${driver.prezime_vozaca}` : 'Nepoznato';
   };
 
   return (

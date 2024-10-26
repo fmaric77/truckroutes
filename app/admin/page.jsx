@@ -9,8 +9,9 @@ import Drivers from './Drivers';
 import Stores from './Stores';
 import Travels from './Travels';
 import Route from './Rute';
-import Skladista from './Skladista'; // Import the Skladista component
+import Skladista from './Skladista';
 import Link from 'next/link';
+import Admin from './Admin'; // Correct import for Admin component
 
 const AdminPanel = () => {
   const [admin, setAdmin] = useState(null);
@@ -20,7 +21,8 @@ const AdminPanel = () => {
   const [trucks, setTrucks] = useState([]);
   const [stores, setStores] = useState([]);
   const [spremneRute, setSpremneRute] = useState([]);
-  const [skladista, setSkladista] = useState([]); // Add state for skladista
+  const [skladista, setSkladista] = useState([]);
+  const [admins, setAdmins] = useState([]); // Add state for admins
   const router = useRouter();
 
   useEffect(() => {
@@ -74,6 +76,12 @@ const AdminPanel = () => {
           const skladistaData = await skladistaRes.json();
           setSkladista(skladistaData);
         }
+
+        const adminsRes = await fetch('/api/admins');
+        if (adminsRes.ok) {
+          const adminsData = await adminsRes.json();
+          setAdmins(adminsData);
+        }
       } catch (error) {
         console.error('Failed to fetch data:', error);
       }
@@ -84,7 +92,7 @@ const AdminPanel = () => {
 
   const handleLogout = async () => {
     localStorage.removeItem('admin');
-    await logAction('Admin logged out', admin.id);
+    await logAction('Administrator se odjavio', admin.id);
     router.push('/');
   };
 
@@ -112,11 +120,13 @@ const AdminPanel = () => {
         >
           Odjava
         </button>
-        <nav className="mb-6">
+        <nav className="mb-6 flex justify-end">
           <ul className="flex flex-col space-y-2">
             <li>
               <Link legacyBehavior href="/admin/logs">
-                <a className="text-blue-400 hover:underline">Admin Action Logs</a>
+                <a className="flex items-center justify-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition duration-300 ease-in-out">
+                  📜 Povijest radnji
+                </a>
               </Link>
             </li>
             {/* Add other navigation links here */}
@@ -147,7 +157,9 @@ const AdminPanel = () => {
               <div className="bg-gray-700 p-4 rounded-lg shadow-md">
                 <Skladista skladista={skladista} setSkladista={setSkladista} adminId={admin.id} />
               </div>
-
+              <div className="bg-gray-700 p-4 rounded-lg shadow-md">
+                <Admin admins={admins} setAdmins={setAdmins} adminId={admin.id} />
+              </div>
               <div className="bg-gray-700 p-4 rounded-lg shadow-md col-span-1 md:col-span-2 lg:col-span-3">
                 <Travels 
                   putovanja={putovanja} 
@@ -156,10 +168,11 @@ const AdminPanel = () => {
                   trucks={trucks} 
                   spremneRute={spremneRute} 
                   stores={stores} 
+                  adminId={admin.id}
                 />
               </div>
 
-            
+     
             </div>
           </div>
         )}

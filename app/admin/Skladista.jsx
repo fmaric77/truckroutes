@@ -1,6 +1,21 @@
 import { useState } from 'react';
 
-const Skladista = ({ skladista = [], setSkladista }) => {
+const logAction = async (action, adminId, skladisteInfo) => {
+  console.log('Logging action:', action, 'Admin ID:', adminId, 'Skladiste Info:', skladisteInfo);
+  try {
+    await fetch('/api/logs', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ action, adminId, ...skladisteInfo }),
+    });
+  } catch (error) {
+    console.error('Error logging action:', error);
+  }
+};
+
+const Skladista = ({ skladista = [], setSkladista, adminId }) => {
   const [showSkladisteInput, setShowSkladisteInput] = useState(false);
   const [showSkladista, setShowSkladista] = useState(false);
   const [skladisteInput, setSkladisteInput] = useState({ naziv_skladista: '', lozinka_skladista: '' });
@@ -36,10 +51,14 @@ const Skladista = ({ skladista = [], setSkladista }) => {
       setSkladista([...skladista, newSkladiste]);
       setShowSkladisteInput(false);
       setSkladisteInput({ naziv_skladista: '', lozinka_skladista: '' });
+      await logAction(`Skladiste dodano: ${naziv_skladista}`, adminId, { naziv_skladista });
     }
   };
 
   const handleRemoveSkladiste = async (id) => {
+    const skladisteToRemove = skladista.find(skladiste => skladiste.id === id);
+    if (!skladisteToRemove) return;
+
     const res = await fetch('/api/skladista', {
       method: 'DELETE',
       headers: {
@@ -49,6 +68,7 @@ const Skladista = ({ skladista = [], setSkladista }) => {
     });
     if (res.ok) {
       setSkladista(skladista.filter(skladiste => skladiste.id !== id));
+      await logAction(`Skladiste uklonjeno: ${skladisteToRemove.naziv_skladista}`, adminId, { naziv_skladista: skladisteToRemove.naziv_skladista });
     }
   };
 

@@ -1,6 +1,21 @@
 import { useState } from 'react';
 
-const Trucks = ({ trucks, setTrucks }) => {
+const logAction = async (action, adminId, truckInfo) => {
+  console.log('Logging action:', action, 'Admin ID:', adminId, 'Truck Info:', truckInfo);
+  try {
+    await fetch('/api/logs', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ action, adminId, ...truckInfo }),
+    });
+  } catch (error) {
+    console.error('Error logging action:', error);
+  }
+};
+
+const Trucks = ({ trucks, setTrucks, adminId }) => {
   const [showTruckInput, setShowTruckInput] = useState(false);
   const [showTrucks, setShowTrucks] = useState(false);
   const [truckInput, setTruckInput] = useState({ registracija: '', datum_registracije: '' });
@@ -42,10 +57,14 @@ const Trucks = ({ trucks, setTrucks }) => {
       setTrucks([...trucks, newTruck]);
       setShowTruckInput(false);
       setTruckInput({ registracija: '', datum_registracije: '' });
+      await logAction(`Kamion dodan: ${registracija}`, adminId, { registracija, datum_registracije });
     }
   };
 
   const handleRemoveTruck = async (id) => {
+    const truckToRemove = trucks.find(truck => truck.id === id);
+    if (!truckToRemove) return;
+
     const res = await fetch('/api/kamioni', {
       method: 'DELETE',
       headers: {
@@ -55,6 +74,7 @@ const Trucks = ({ trucks, setTrucks }) => {
     });
     if (res.ok) {
       setTrucks(trucks.filter(truck => truck.id !== id));
+      await logAction(`Kamion uklonjen: ${truckToRemove.registracija}`, adminId, { registracija: truckToRemove.registracija });
     }
   };
 

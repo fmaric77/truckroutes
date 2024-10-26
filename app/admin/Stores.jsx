@@ -1,6 +1,21 @@
 import { useState } from 'react';
 
-const Stores = ({ stores, setStores }) => {
+const logAction = async (action, adminId, storeInfo) => {
+  console.log('Logging action:', action, 'Admin ID:', adminId, 'Store Info:', storeInfo);
+  try {
+    await fetch('/api/logs', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ action, adminId, ...storeInfo }),
+    });
+  } catch (error) {
+    console.error('Error logging action:', error);
+  }
+};
+
+const Stores = ({ stores, setStores, adminId }) => {
   const [showStoreInput, setShowStoreInput] = useState(false);
   const [showStores, setShowStores] = useState(false);
   const [storeInput, setStoreInput] = useState({ ime_trgovine: '', adresa: '' });
@@ -36,10 +51,17 @@ const Stores = ({ stores, setStores }) => {
       setStores([...stores, newStore]);
       setShowStoreInput(false);
       setStoreInput({ ime_trgovine: '', adresa: '' });
+      await logAction(`Trgovina dodana: ${ime_trgovine}, ${adresa}`, adminId, {
+        ime_trgovine,
+        adresa,
+      });
     }
   };
 
   const handleRemoveStore = async (id) => {
+    const storeToRemove = stores.find(store => store.id === id);
+    if (!storeToRemove) return;
+
     const res = await fetch('/api/trgovine', {
       method: 'DELETE',
       headers: {
@@ -49,6 +71,10 @@ const Stores = ({ stores, setStores }) => {
     });
     if (res.ok) {
       setStores(stores.filter(store => store.id !== id));
+      await logAction(`Trgovina uklonjena: ${storeToRemove.ime_trgovine}, ${storeToRemove.adresa}`, adminId, {
+        ime_trgovine: storeToRemove.ime_trgovine,
+        adresa: storeToRemove.adresa,
+      });
     }
   };
 

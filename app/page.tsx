@@ -42,7 +42,7 @@ const LoginPage = () => {
       localStorage.setItem('admin', JSON.stringify(data.admin));
 
       // Log the login action
-      await logAction('Admin logged in', data.admin.id);
+      await logAction('Administrator se prijavio', data.admin.id);
 
       // Preusmjeri na administratorsku ploču
       router.push('/admin'); // Prilagodite putanju do vaše administratorske ploče
