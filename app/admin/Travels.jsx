@@ -152,7 +152,7 @@ const Travels = ({ putovanja, setPutovanja, drivers, trucks, spremneRute, stores
             className="border p-2 mr-2 bg-black text-white"
           >
             <option value="">Odaberi vozača</option>
-            {drivers.map(driver => (
+            {drivers.filter(driver => driver.status !== 'neaktivan').map(driver => (
               <option key={driver.id} value={driver.id}>
                 {driver.ime_vozaca} {driver.prezime_vozaca}
               </option>
@@ -165,11 +165,13 @@ const Travels = ({ putovanja, setPutovanja, drivers, trucks, spremneRute, stores
             className="border p-2 mr-2 bg-black text-white"
           >
             <option value="">Odaberi kamion</option>
-            {trucks.map(truck => (
-              <option key={truck.id} value={truck.id}>
-                {truck.registracija}
-              </option>
-            ))}
+            {trucks
+              .filter(truck => truck.status === 'Dostupan')
+              .map(truck => (
+                <option key={truck.id} value={truck.id}>
+                  {truck.registracija}
+                </option>
+              ))}
           </select>
           {errors.kamion_id && <p className="text-red-500">{errors.kamion_id}</p>}
           <select
@@ -195,7 +197,6 @@ const Travels = ({ putovanja, setPutovanja, drivers, trucks, spremneRute, stores
           {putovanja.map(p => (
             <li key={p.id} className="flex justify-between items-center border-b py-2">
               {p.datum} - {p.vozac_ime} {p.vozac_prezime} - {p.registracija} - {p.ruta}
-              <button onClick={() => handleUpdatePutovanje(p.id, '2024-01-02', p.vozac_id, p.kamion_id, p.ruta_id)} className="text-yellow-500 ml-2">Ažuriraj</button>
               <button onClick={() => handleRemovePutovanje(p.id)} className="text-red-500 ml-2">Ukloni</button>
             </li>
           ))}

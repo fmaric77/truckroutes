@@ -25,7 +25,7 @@ const Route = ({ routes, setRoutes, stores, adminId }) => {
     const newErrors = {};
     if (routeInput.selectedStores.some(store => !store)) {
       newErrors.selectedStores = 'Sva polja trgovina moraju biti odabrana.';
-      alert(newErrors.selectedStores);
+      
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;

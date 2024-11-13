@@ -25,11 +25,9 @@ const Skladista = ({ skladista = [], setSkladista, adminId }) => {
     const newErrors = {};
     if (!skladisteInput.naziv_skladista) {
       newErrors.naziv_skladista = 'Naziv je obavezan.';
-      alert(newErrors.naziv_skladista);
     }
     if (!skladisteInput.lozinka_skladista) {
       newErrors.lozinka_skladista = 'Lozinka je obavezna.';
-      alert(newErrors.lozinka_skladista);
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -51,6 +49,7 @@ const Skladista = ({ skladista = [], setSkladista, adminId }) => {
       setSkladista([...skladista, newSkladiste]);
       setShowSkladisteInput(false);
       setSkladisteInput({ naziv_skladista: '', lozinka_skladista: '' });
+      setErrors({});
       await logAction(`Skladiste dodano: ${naziv_skladista}`, adminId, { naziv_skladista });
     }
   };
@@ -83,22 +82,28 @@ const Skladista = ({ skladista = [], setSkladista, adminId }) => {
       </button>
       {showSkladisteInput && (
         <div className="mt-4">
-          <input
-            type="text"
-            placeholder="Naziv"
-            value={skladisteInput.naziv_skladista}
-            onChange={(e) => setSkladisteInput({ ...skladisteInput, naziv_skladista: e.target.value })}
-            className="border p-2 mr-2"
-            style={{ backgroundColor: 'black', color: 'white' }}
-          />
-          <input
-            type="password"
-            placeholder="Lozinka"
-            value={skladisteInput.lozinka_skladista}
-            onChange={(e) => setSkladisteInput({ ...skladisteInput, lozinka_skladista: e.target.value })}
-            className="border p-2 mr-2"
-            style={{ backgroundColor: 'black', color: 'white' }}
-          />
+          <div className="flex flex-col mb-2">
+            <input
+              type="text"
+              placeholder="Naziv"
+              value={skladisteInput.naziv_skladista}
+              onChange={(e) => setSkladisteInput({ ...skladisteInput, naziv_skladista: e.target.value })}
+              className="border p-2 mr-2"
+              style={{ backgroundColor: 'black', color: 'white' }}
+            />
+            {errors.naziv_skladista && <span className="text-red-500 text-sm mt-1">{errors.naziv_skladista}</span>}
+          </div>
+          <div className="flex flex-col mb-2">
+            <input
+              type="password"
+              placeholder="Lozinka"
+              value={skladisteInput.lozinka_skladista}
+              onChange={(e) => setSkladisteInput({ ...skladisteInput, lozinka_skladista: e.target.value })}
+              className="border p-2 mr-2"
+              style={{ backgroundColor: 'black', color: 'white' }}
+            />
+            {errors.lozinka_skladista && <span className="text-red-500 text-sm mt-1">{errors.lozinka_skladista}</span>}
+          </div>
           <button onClick={handleAddSkladiste} className="bg-green-500 text-white p-2 rounded">
             Pošalji
           </button>

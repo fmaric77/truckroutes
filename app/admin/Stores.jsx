@@ -25,11 +25,9 @@ const Stores = ({ stores, setStores, adminId }) => {
     const newErrors = {};
     if (!storeInput.ime_trgovine) {
       newErrors.ime_trgovine = 'Ime trgovine je obavezno.';
-      alert(newErrors.ime_trgovine);
     }
     if (!storeInput.adresa) {
       newErrors.adresa = 'Adresa je obavezna.';
-      alert(newErrors.adresa);
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -51,6 +49,7 @@ const Stores = ({ stores, setStores, adminId }) => {
       setStores([...stores, newStore]);
       setShowStoreInput(false);
       setStoreInput({ ime_trgovine: '', adresa: '' });
+      setErrors({});
       await logAction(`Trgovina dodana: ${ime_trgovine}, ${adresa}`, adminId, {
         ime_trgovine,
         adresa,
@@ -88,23 +87,33 @@ const Stores = ({ stores, setStores, adminId }) => {
         {showStores ? 'Sakrij' : 'Prikaži'} trgovine
       </button>
       {showStoreInput && (
-        <div className="mt-4">
-          <input
-            type="text"
-            placeholder="Ime trgovine"
-            value={storeInput.ime_trgovine}
-            onChange={(e) => setStoreInput({ ...storeInput, ime_trgovine: e.target.value })}
-            className="border p-2 mr-2"
-            style={{ backgroundColor: 'black', color: 'white' }}
-          />
-          <input
-            type="text"
-            placeholder="Adresa"
-            value={storeInput.adresa}
-            onChange={(e) => setStoreInput({ ...storeInput, adresa: e.target.value })}
-            className="border p-2 mr-2"
-            style={{ backgroundColor: 'black', color: 'white' }}
-          />
+        <div className="mt-4 space-y-4">
+          <div>
+            <input
+              type="text"
+              placeholder="Ime trgovine"
+              value={storeInput.ime_trgovine}
+              onChange={(e) => setStoreInput({ ...storeInput, ime_trgovine: e.target.value })}
+              className="border p-2 mr-2 w-64"
+              style={{ backgroundColor: 'black', color: 'white' }}
+            />
+            {errors.ime_trgovine && (
+              <div className="text-red-500 text-sm mt-1">{errors.ime_trgovine}</div>
+            )}
+          </div>
+          <div>
+            <input
+              type="text"
+              placeholder="Adresa"
+              value={storeInput.adresa}
+              onChange={(e) => setStoreInput({ ...storeInput, adresa: e.target.value })}
+              className="border p-2 mr-2 w-64"
+              style={{ backgroundColor: 'black', color: 'white' }}
+            />
+            {errors.adresa && (
+              <div className="text-red-500 text-sm mt-1">{errors.adresa}</div>
+            )}
+          </div>
           <button onClick={handleAddStore} className="bg-green-500 text-white p-2 rounded">
             Pošalji
           </button>

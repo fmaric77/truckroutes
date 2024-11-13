@@ -67,7 +67,7 @@ export async function POST(req: Request) {
     console.log('Database connection closed');
 
     console.log('Invalid credentials');
-    return NextResponse.json({ message: 'Invalid credentials' }, { status: 401 });
+    return NextResponse.json({ message: 'Pogrešno korisničko ime ili lozinka' }, { status: 401 });
   } catch (error) {
     console.error('Error during login:', error);
     return NextResponse.json({ message: 'Internal server error' }, { status: 500 });

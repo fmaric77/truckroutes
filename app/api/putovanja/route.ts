@@ -20,6 +20,8 @@ export async function GET() {
         Kamioni k ON p.kamion_id = k.id
       JOIN 
         SpremneRute sr ON p.ruta_id = sr.id
+      WHERE 
+        v.status != 'neaktivan'
     `);
     const formattedRows = rows.map(row => ({
       ...row,

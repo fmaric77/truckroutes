@@ -20,7 +20,7 @@ const Logs = () => {
   return (
     <div className="p-8 bg-gray-900 min-h-screen text-white">
       <div className="max-w-7xl mx-auto bg-gray-800 shadow-lg rounded-lg p-6">
-        <h1 className="text-3xl font-extrabold mb-6 text-center text-white">Admin Action Logs</h1>
+        <h1 className="text-3xl font-extrabold mb-6 text-center text-white">Povijest radnji administratora</h1>
         <Link legacyBehavior href="/admin">
           <a className="text-blue-400 hover:underline">Nazad</a>
         </Link>
@@ -28,9 +28,9 @@ const Logs = () => {
           <table className="min-w-full bg-gray-800 text-white">
             <thead>
               <tr>
-                <th className="py-2 px-4 border-b border-gray-700">Admin ID</th>
-                <th className="py-2 px-4 border-b border-gray-700">Action</th>
-                <th className="py-2 px-4 border-b border-gray-700">Timestamp</th>
+                <th className="py-2 px-4 border-b border-gray-700">Oznaka administratora</th>
+                <th className="py-2 px-4 border-b border-gray-700">Radnja</th>
+                <th className="py-2 px-4 border-b border-gray-700">Vremenska oznaka</th>
               </tr>
             </thead>
             <tbody>

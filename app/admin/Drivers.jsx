@@ -1,5 +1,9 @@
 import { useState } from 'react';
 
+const ErrorMessage = ({ message }) => (
+  <div className="text-red-500 text-sm mt-1">{message}</div>
+);
+
 const logAction = async (action, adminId, driverInfo) => {
   console.log('Logging action:', action, 'Admin ID:', adminId, 'Driver Info:', driverInfo);
   try {
@@ -18,27 +22,35 @@ const logAction = async (action, adminId, driverInfo) => {
 const Drivers = ({ drivers = [], setDrivers, adminId }) => {
   const [showDriverInput, setShowDriverInput] = useState(false);
   const [showDrivers, setShowDrivers] = useState(false);
-  const [driverInput, setDriverInput] = useState({ ime_vozaca: '', prezime_vozaca: '', oib_vozaca: '', lozinka_vozaca: '' });
+  const [driverInput, setDriverInput] = useState({ 
+    ime_vozaca: '', 
+    prezime_vozaca: '', 
+    oib_vozaca: '', 
+    lozinka_vozaca: '' 
+  });
   const [errors, setErrors] = useState({});
 
   const validateDriverInput = () => {
     const newErrors = {};
+    
     if (!driverInput.ime_vozaca) {
       newErrors.ime_vozaca = 'Ime je obavezno.';
-      alert(newErrors.ime_vozaca);
     }
     if (!driverInput.prezime_vozaca) {
       newErrors.prezime_vozaca = 'Prezime je obavezno.';
-      alert(newErrors.prezime_vozaca);
     }
     if (!driverInput.oib_vozaca) {
       newErrors.oib_vozaca = 'OIB je obavezan.';
-      alert(newErrors.oib_vozaca);
+    } else {
+      const oibRegex = /^\d{11}$/;
+      if (!oibRegex.test(driverInput.oib_vozaca)) {
+        newErrors.oib_vozaca = 'OIB mora sadržavati točno 11 brojeva.';
+      }
     }
     if (!driverInput.lozinka_vozaca) {
       newErrors.lozinka_vozaca = 'Lozinka je obavezna.';
-      alert(newErrors.lozinka_vozaca);
     }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -47,19 +59,32 @@ const Drivers = ({ drivers = [], setDrivers, adminId }) => {
     if (!validateDriverInput()) return;
 
     const { ime_vozaca, prezime_vozaca, oib_vozaca, lozinka_vozaca } = driverInput;
-    const res = await fetch('/api/vozaci', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ ime_vozaca, prezime_vozaca, oib_vozaca, lozinka_vozaca }),
-    });
-    if (res.ok) {
-      const newDriver = await res.json();
-      setDrivers([...drivers, newDriver]);
-      setShowDriverInput(false);
-      setDriverInput({ ime_vozaca: '', prezime_vozaca: '', oib_vozaca: '', lozinka_vozaca: '' });
-      await logAction(`Vozac dodan: ${ime_vozaca} ${prezime_vozaca} (OIB: ${oib_vozaca})`, adminId, { ime_vozaca, prezime_vozaca, oib_vozaca });
+    
+    try {
+      const res = await fetch('/api/vozaci', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ ime_vozaca, prezime_vozaca, oib_vozaca, lozinka_vozaca }),
+      });
+
+      if (res.status === 500) {
+        setErrors({ ...errors, oib_vozaca: 'OIB već postoji u bazi.' });
+        return;
+      }
+
+      if (res.ok) {
+        const newDriver = await res.json();
+        setDrivers([...drivers, newDriver]);
+        setShowDriverInput(false);
+        setDriverInput({ ime_vozaca: '', prezime_vozaca: '', oib_vozaca: '', lozinka_vozaca: '' });
+        setErrors({});
+        await logAction(`Vozac dodan: ${ime_vozaca} ${prezime_vozaca} (OIB: ${oib_vozaca})`, adminId, { ime_vozaca, prezime_vozaca, oib_vozaca });
+      }
+    } catch (error) {
+      console.error('Error adding driver:', error);
+      setErrors({ ...errors, submit: 'Došlo je do greške prilikom dodavanja vozača.' });
     }
   };
 
@@ -74,7 +99,11 @@ const Drivers = ({ drivers = [], setDrivers, adminId }) => {
     });
     if (res.ok) {
       setDrivers(drivers.filter(driver => driver.id !== id));
-      await logAction(`Vozac uklonjen: ${driverToRemove.ime_vozaca} ${driverToRemove.prezime_vozaca} (OIB: ${driverToRemove.oib_vozaca})`, adminId, { ime_vozaca: driverToRemove.ime_vozaca, prezime_vozaca: driverToRemove.prezime_vozaca, oib_vozaca: driverToRemove.oib_vozaca });
+      await logAction(`Vozac uklonjen: ${driverToRemove.ime_vozaca} ${driverToRemove.prezime_vozaca} (OIB: ${driverToRemove.oib_vozaca})`, adminId, { 
+        ime_vozaca: driverToRemove.ime_vozaca, 
+        prezime_vozaca: driverToRemove.prezime_vozaca, 
+        oib_vozaca: driverToRemove.oib_vozaca 
+      });
     }
   };
 
@@ -90,7 +119,12 @@ const Drivers = ({ drivers = [], setDrivers, adminId }) => {
     if (res.ok) {
       const updatedDriver = await res.json();
       setDrivers(drivers.map(driver => driver.id === id ? updatedDriver : driver));
-      await logAction(`Status promijenjen za: ${updatedDriver.ime_vozaca} ${updatedDriver.prezime_vozaca} (OIB: ${updatedDriver.oib_vozaca}) na ${newStatus}`, adminId, { ime_vozaca: updatedDriver.ime_vozaca, prezime_vozaca: updatedDriver.prezime_vozaca, oib_vozaca: updatedDriver.oib_vozaca, status: newStatus });
+      await logAction(`Status promijenjen za: ${updatedDriver.ime_vozaca} ${updatedDriver.prezime_vozaca} (OIB: ${updatedDriver.oib_vozaca}) na ${newStatus}`, adminId, {
+        ime_vozaca: updatedDriver.ime_vozaca,
+        prezime_vozaca: updatedDriver.prezime_vozaca,
+        oib_vozaca: updatedDriver.oib_vozaca,
+        status: newStatus
+      });
     }
   };
 
@@ -103,45 +137,65 @@ const Drivers = ({ drivers = [], setDrivers, adminId }) => {
       <button onClick={() => setShowDrivers(!showDrivers)} className="bg-blue-500 text-white p-2 mt-2 rounded ml-2">
         {showDrivers ? 'Sakrij' : 'Prikaži'} vozače
       </button>
+      
       {showDriverInput && (
-        <div className="mt-4">
-          <input
-            type="text"
-            placeholder="Ime"
-            value={driverInput.ime_vozaca}
-            onChange={(e) => setDriverInput({ ...driverInput, ime_vozaca: e.target.value })}
-            className="border p-2 mr-2"
-            style={{ backgroundColor: 'black', color: 'white' }}
-          />
-          <input
-            type="text"
-            placeholder="Prezime"
-            value={driverInput.prezime_vozaca}
-            onChange={(e) => setDriverInput({ ...driverInput, prezime_vozaca: e.target.value })}
-            className="border p-2 mr-2"
-            style={{ backgroundColor: 'black', color: 'white' }}
-          />
-          <input
-            type="text"
-            placeholder="OIB"
-            value={driverInput.oib_vozaca}
-            onChange={(e) => setDriverInput({ ...driverInput, oib_vozaca: e.target.value })}
-            className="border p-2 mr-2"
-            style={{ backgroundColor: 'black', color: 'white' }}
-          />
-          <input
-            type="password"
-            placeholder="Lozinka"
-            value={driverInput.lozinka_vozaca}
-            onChange={(e) => setDriverInput({ ...driverInput, lozinka_vozaca: e.target.value })}
-            className="border p-2 mr-2"
-            style={{ backgroundColor: 'black', color: 'white' }}
-          />
+        <div className="mt-4 space-y-4">
+          <div className="flex flex-col">
+            <input
+              type="text"
+              placeholder="Ime"
+              value={driverInput.ime_vozaca}
+              onChange={(e) => setDriverInput({ ...driverInput, ime_vozaca: e.target.value })}
+              className="border p-2 mr-2"
+              style={{ backgroundColor: 'black', color: 'white' }}
+            />
+            {errors.ime_vozaca && <ErrorMessage message={errors.ime_vozaca} />}
+          </div>
+
+          <div className="flex flex-col">
+            <input
+              type="text"
+              placeholder="Prezime"
+              value={driverInput.prezime_vozaca}
+              onChange={(e) => setDriverInput({ ...driverInput, prezime_vozaca: e.target.value })}
+              className="border p-2 mr-2"
+              style={{ backgroundColor: 'black', color: 'white' }}
+            />
+            {errors.prezime_vozaca && <ErrorMessage message={errors.prezime_vozaca} />}
+          </div>
+
+          <div className="flex flex-col">
+            <input
+              type="text"
+              placeholder="OIB"
+              value={driverInput.oib_vozaca}
+              onChange={(e) => setDriverInput({ ...driverInput, oib_vozaca: e.target.value })}
+              className="border p-2 mr-2"
+              style={{ backgroundColor: 'black', color: 'white' }}
+            />
+            {errors.oib_vozaca && <ErrorMessage message={errors.oib_vozaca} />}
+          </div>
+
+          <div className="flex flex-col">
+            <input
+              type="password"
+              placeholder="Lozinka"
+              value={driverInput.lozinka_vozaca}
+              onChange={(e) => setDriverInput({ ...driverInput, lozinka_vozaca: e.target.value })}
+              className="border p-2 mr-2"
+              style={{ backgroundColor: 'black', color: 'white' }}
+            />
+            {errors.lozinka_vozaca && <ErrorMessage message={errors.lozinka_vozaca} />}
+          </div>
+
+          {errors.submit && <ErrorMessage message={errors.submit} />}
+
           <button onClick={handleAddDriver} className="bg-green-500 text-white p-2 rounded">
             Pošalji
           </button>
         </div>
       )}
+
       {showDrivers && (
         <ul className="mt-4">
           {drivers.map(driver => (
@@ -153,7 +207,9 @@ const Drivers = ({ drivers = [], setDrivers, adminId }) => {
               >
                 {driver.status}
               </span>
-              <button onClick={() => handleRemoveDriver(driver.id)} className="text-red-500 ml-2">Ukloni</button>
+              <button onClick={() => handleRemoveDriver(driver.id)} className="text-red-500 ml-2">
+                Ukloni
+              </button>
             </li>
           ))}
         </ul>

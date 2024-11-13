@@ -15,6 +15,14 @@ const logAction = async (action, adminId, truckInfo) => {
   }
 };
 
+const formatDate = (dateString) => {
+  const date = new Date(dateString);
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  return `${day}.${month}.${year}`;
+};
+
 const Trucks = ({ trucks, setTrucks, adminId }) => {
   const [showTruckInput, setShowTruckInput] = useState(false);
   const [showTrucks, setShowTrucks] = useState(false);
@@ -27,8 +35,8 @@ const Trucks = ({ trucks, setTrucks, adminId }) => {
 
     if (!truckInput.registracija) {
       newErrors.registracija = 'Registracija je obavezna.';
-    } else if (!/^[a-zA-Z0-9]{8}$/.test(truckInput.registracija)) {
-      newErrors.registracija = 'Registracija mora imati točno 8 alfanumeričkih znakova.';
+    } else if (!/^[a-zA-Z0-9]{6,12}$/.test(truckInput.registracija)) {
+      newErrors.registracija = 'Registracija mora imati između 6 i 12 alfanumeričkih znakova.';
     }
 
     if (!truckInput.datum_registracije) {
@@ -116,7 +124,7 @@ const Trucks = ({ trucks, setTrucks, adminId }) => {
         <ul className="mt-4">
           {trucks.map(truck => (
             <li key={truck.id} className="flex justify-between items-center border-b py-2">
-              {truck.registracija} - {truck.datum_registracije}
+              {truck.registracija} - {formatDate(truck.datum_registracije)} - {truck.status}
               <button onClick={() => handleRemoveTruck(truck.id)} className="text-red-500 ml-2">Ukloni</button>
             </li>
           ))}
