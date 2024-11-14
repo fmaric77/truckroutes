@@ -6,20 +6,17 @@ const Admin = ({ admins = [], setAdmins, adminId }) => {
   const [showAdminInput, setShowAdminInput] = useState(false);
   const [showAdmins, setShowAdmins] = useState(false);
   const [adminInput, setAdminInput] = useState({ ime: '', lozinka: '' });
-  const [errors, setErrors] = useState({}); // Fixed destructuring
 
   const validateAdminInput = () => {
-    const newErrors = {};
     if (!adminInput.ime) {
-      newErrors.ime = 'Ime je obavezno.';
-      alert(newErrors.ime);
+      alert('Ime je obavezno.');
+      return false;
     }
     if (!adminInput.lozinka) {
-      newErrors.lozinka = 'Lozinka je obavezna.';
-      alert(newErrors.lozinka);
+      alert('Lozinka je obavezna.');
+      return false;
     }
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return true;
   };
 
   const logAction = async (action, adminId, details) => {
