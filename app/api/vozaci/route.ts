@@ -43,7 +43,8 @@ export async function PUT(request: NextRequest) {
 
   try {
     await connection.execute('UPDATE Vozaci SET status = ? WHERE id = ?', [status, id]);
-    const [updatedDriver]: [Array<{ [key: string]: any }>] = await connection.execute('SELECT * FROM Vozaci WHERE id = ?', [id]);
+    const [rows] = await connection.execute('SELECT * FROM Vozaci WHERE id = ?', [id]);
+    const updatedDriver = rows as any[];
     return NextResponse.json(updatedDriver[0]);
   } catch (error) {
     return NextResponse.json({ error: 'Failed to update vozac status' }, { status: 500 });

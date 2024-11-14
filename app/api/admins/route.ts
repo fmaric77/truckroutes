@@ -24,29 +24,42 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Failed to add administrator' }, { status: 500 });
   }
 }
-
 export async function DELETE(request: NextRequest) {
-  const connection = await getConnection();
-  const { id } = await request.json();
-
+  let connection;
   try {
-    await connection.execute('DELETE FROM Administratori WHERE id = ?', [id]);
+    connection = await getConnection();
+    const { id } = await request.json();
+
+    // First check if admin exists
+    const [admins]: any = await connection.execute(
+      'SELECT * FROM Administratori WHERE id = ?', 
+      [id]
+    );
+
+    if (!admins || admins.length === 0) {
+      return NextResponse.json(
+        { error: 'Administrator not found' }, 
+        { status: 404 }
+      );
+    }
+
+    // Perform delete
+    await connection.execute(
+      'DELETE FROM Administratori WHERE id = ?', 
+      [id]
+    );
+
     return NextResponse.json({ message: 'Administrator deleted successfully' });
-  } catch (error) {
-    return NextResponse.json({ error: 'Failed to delete administrator' }, { status: 500 });
-  }
-}
 
-export async function PUT(request: NextRequest) {
-  const connection = await getConnection();
-  const { id, lozinka } = await request.json();
-
-  try {
-    const hashedLozinka = await bcrypt.hash(lozinka, 10);
-    await connection.execute('UPDATE Administratori SET lozinka = ? WHERE id = ?', [hashedLozinka, id]);
-    const [updatedAdmin]: [Array<{ [key: string]: any }>] = await connection.execute('SELECT * FROM Administratori WHERE id = ?', [id]);
-    return NextResponse.json(updatedAdmin[0]);
-  } catch (error) {
-    return NextResponse.json({ error: 'Failed to update administrator' }, { status: 500 });
+  } catch (error: any) {
+    console.error('Delete admin error:', error); // Add error logging
+    return NextResponse.json(
+      { error: 'Failed to delete administrator', details: error.message }, 
+      { status: 500 }
+    );
+  } finally {
+    if (connection) {
+      await connection.end(); // Properly close connection
+    }
   }
 }

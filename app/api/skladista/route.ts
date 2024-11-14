@@ -43,7 +43,7 @@ export async function PUT(request: NextRequest) {
 
   try {
     await connection.execute('UPDATE Skladista SET naziv_skladista = ? WHERE id = ?', [naziv_skladista, id]);
-    const [updatedSkladiste]: [Array<{ [key: string]: any }>] = await connection.execute('SELECT * FROM Skladista WHERE id = ?', [id]);
+    const [updatedSkladiste]: [any[], any] = await connection.execute('SELECT * FROM Skladista WHERE id = ?', [id]);
     return NextResponse.json(updatedSkladiste[0]);
   } catch (error) {
     return NextResponse.json({ error: 'Failed to update skladiste' }, { status: 500 });

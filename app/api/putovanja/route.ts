@@ -4,7 +4,7 @@ import { getConnection } from '../../lib/db';
 export async function GET() {
   const connection = await getConnection();
   try {
-    const [rows] = await connection.execute(`
+    const [rows]: any[] = await connection.execute(`
       SELECT 
         p.id, 
         p.datum, 
@@ -23,7 +23,7 @@ export async function GET() {
       WHERE 
         v.status != 'neaktivan'
     `);
-    const formattedRows = rows.map(row => ({
+    const formattedRows = rows.map((row: any) => ({
       ...row,
       datum: new Date(row.datum).toLocaleDateString('en-GB', {
         day: '2-digit',

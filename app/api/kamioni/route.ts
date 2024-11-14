@@ -4,7 +4,7 @@ import { getConnection } from '../../lib/db';
 export async function GET() {
   const connection = await getConnection();
   try {
-    const [rows] = await connection.execute('SELECT * FROM Kamioni');
+    const [rows]: [any[], any] = await connection.execute('SELECT * FROM Kamioni');
     const formattedRows = rows.map(row => ({
       ...row,
       datum_registracije: new Date(row.datum_registracije).toLocaleDateString('en-GB', {
