@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState} from 'react';
 
 const logAction = async (action, adminId, putovanjeInfo) => {
   console.log('Logging action:', action, 'Admin ID:', adminId, 'Putovanje Info:', putovanjeInfo);
@@ -15,7 +15,7 @@ const logAction = async (action, adminId, putovanjeInfo) => {
   }
 };
 
-const Travels = ({ putovanja, setPutovanja, drivers, trucks, spremneRute, stores, adminId }) => {
+const Travels = ({ putovanja, setPutovanja, drivers, trucks, spremneRute, adminId }) => {
   const [showPutovanja, setShowPutovanja] = useState(false);
   const [showPutovanjeInput, setShowPutovanjeInput] = useState(false);
   const [putovanjeInput, setPutovanjeInput] = useState({ datum: '', vozac_id: '', kamion_id: '', ruta_id: '' });
@@ -84,26 +84,7 @@ const Travels = ({ putovanja, setPutovanja, drivers, trucks, spremneRute, stores
     }
   };
 
-  const handleUpdatePutovanje = async (id, datum, vozac_id, kamion_id, ruta_id) => {
-    const res = await fetch('/api/putovanja', {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ id, datum, vozac_id, kamion_id, ruta_id }),
-    });
-    if (res.ok) {
-      const updatedPutovanje = await res.json();
-      setPutovanja(putovanja.map(p => (p.id === id ? updatedPutovanje : p)));
-      await logAction(`Putovanje ažurirano: ${datum}`, adminId, {
-        id,
-        datum,
-        vozac: getDriverName(vozac_id),
-        kamion: getTruckRegistration(kamion_id),
-        ruta: getRouteName(ruta_id),
-      });
-    }
-  };
+  
 
   const handleRemovePutovanje = async (id) => {
     const putovanjeToRemove = putovanja.find(p => p.id === id);

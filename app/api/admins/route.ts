@@ -1,13 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getConnection } from '../../lib/db';
 import bcrypt from 'bcrypt';
+import { RowDataPacket, ResultSetHeader } from 'mysql2';
+
+interface Administrator extends RowDataPacket {
+  id: number;
+  ime: string;
+  lozinka: string;
+}
 
 export async function GET() {
   const connection = await getConnection();
   try {
-    const [rows] = await connection.execute('SELECT * FROM Administratori');
+    const [rows] = await connection.execute<Administrator[]>('SELECT * FROM Administratori');
     return NextResponse.json(rows);
-  } catch (error) {
+  } catch (error: unknown) {
+    console.error('Error fetching administrators:', error);
     return NextResponse.json({ error: 'Failed to fetch administrators' }, { status: 500 });
   }
 }
@@ -18,20 +26,24 @@ export async function POST(request: NextRequest) {
 
   try {
     const hashedLozinka = await bcrypt.hash(lozinka, 10);
-    const [result]: any = await connection.execute('INSERT INTO Administratori (ime, lozinka) VALUES (?, ?)', [ime, hashedLozinka]);
+    const [result] = await connection.execute<ResultSetHeader>(
+      'INSERT INTO Administratori (ime, lozinka) VALUES (?, ?)',
+      [ime, hashedLozinka]
+    );
     return NextResponse.json({ id: result.insertId, ime }, { status: 201 });
-  } catch (error) {
+  } catch (error: unknown) {
+    console.error('Error adding administrator:', error);
     return NextResponse.json({ error: 'Failed to add administrator' }, { status: 500 });
   }
 }
+
 export async function DELETE(request: NextRequest) {
   let connection;
   try {
     connection = await getConnection();
     const { id } = await request.json();
 
-    // First check if admin exists
-    const [admins]: any = await connection.execute(
+    const [admins] = await connection.execute<Administrator[]>(
       'SELECT * FROM Administratori WHERE id = ?', 
       [id]
     );
@@ -43,7 +55,6 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    // Perform delete
     await connection.execute(
       'DELETE FROM Administratori WHERE id = ?', 
       [id]
@@ -51,15 +62,16 @@ export async function DELETE(request: NextRequest) {
 
     return NextResponse.json({ message: 'Administrator deleted successfully' });
 
-  } catch (error: any) {
-    console.error('Delete admin error:', error); // Add error logging
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Delete admin error:', errorMessage);
     return NextResponse.json(
-      { error: 'Failed to delete administrator', details: error.message }, 
+      { error: 'Failed to delete administrator', details: errorMessage }, 
       { status: 500 }
     );
   } finally {
     if (connection) {
-      await connection.end(); // Properly close connection
+      await connection.end();
     }
   }
 }

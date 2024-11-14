@@ -6,7 +6,7 @@ const Admin = ({ admins = [], setAdmins, adminId }) => {
   const [showAdminInput, setShowAdminInput] = useState(false);
   const [showAdmins, setShowAdmins] = useState(false);
   const [adminInput, setAdminInput] = useState({ ime: '', lozinka: '' });
-  const [errors, setErrors] = useState({});
+  const [setErrors] = useState({});
 
   const validateAdminInput = () => {
     const newErrors = {};
