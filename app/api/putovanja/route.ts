@@ -1,10 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getConnection } from '../../lib/db';
+import { RowDataPacket, ResultSetHeader, FieldPacket } from 'mysql2/promise';
+
+interface PutovanjeRow extends RowDataPacket {
+  id: number;
+  datum: Date;
+  vozac_ime: string;
+  vozac_prezime: string;
+  registracija: string;
+  ruta: string;
+}
+
+interface PutovanjeInput {
+  id?: number;
+  datum: string;
+  vozac_id: number;
+  kamion_id: number;
+  ruta_id: number;
+}
 
 export async function GET() {
   const connection = await getConnection();
   try {
-    const [rows]: any[] = await connection.execute(`
+    const [rows]: [PutovanjeRow[], FieldPacket[]] = await connection.execute<PutovanjeRow[]>(`
       SELECT 
         p.id, 
         p.datum, 
@@ -23,7 +41,8 @@ export async function GET() {
       WHERE 
         v.status != 'neaktivan'
     `);
-    const formattedRows = rows.map((row: any) => ({
+
+    const formattedRows = rows.map((row) => ({
       ...row,
       datum: new Date(row.datum).toLocaleDateString('en-GB', {
         day: '2-digit',
@@ -33,28 +52,37 @@ export async function GET() {
     }));
     return NextResponse.json(formattedRows);
   } catch (error) {
+    console.error('Failed to fetch putovanja:', error);
     return NextResponse.json({ error: 'Failed to fetch putovanja' }, { status: 500 });
   }
 }
 
 export async function POST(request: NextRequest) {
   const connection = await getConnection();
-  const { datum, vozac_id, kamion_id, ruta_id } = await request.json();
+  const data: PutovanjeInput = await request.json();
   try {
-    const [result]: any = await connection.execute('INSERT INTO Putovanja (datum, vozac_id, kamion_id, ruta_id) VALUES (?, ?, ?, ?)', [datum, vozac_id, kamion_id, ruta_id]);
-    return NextResponse.json({ id: result.insertId, datum, vozac_id, kamion_id, ruta_id }, { status: 201 });
+    const [result] = await connection.execute<ResultSetHeader>(
+      'INSERT INTO Putovanja (datum, vozac_id, kamion_id, ruta_id) VALUES (?, ?, ?, ?)',
+      [data.datum, data.vozac_id, data.kamion_id, data.ruta_id]
+    );
+    return NextResponse.json({ id: result.insertId, ...data }, { status: 201 });
   } catch (error) {
+    console.error('Failed to add putovanje:', error);
     return NextResponse.json({ error: 'Failed to add putovanje' }, { status: 500 });
   }
 }
 
 export async function PUT(request: NextRequest) {
   const connection = await getConnection();
-  const { id, datum, vozac_id, kamion_id, ruta_id } = await request.json();
+  const data: PutovanjeInput = await request.json();
   try {
-    await connection.execute('UPDATE Putovanja SET datum = ?, vozac_id = ?, kamion_id = ?, ruta_id = ? WHERE id = ?', [datum, vozac_id, kamion_id, ruta_id, id]);
-    return NextResponse.json({ id, datum, vozac_id, kamion_id, ruta_id });
+    await connection.execute(
+      'UPDATE Putovanja SET datum = ?, vozac_id = ?, kamion_id = ?, ruta_id = ? WHERE id = ?',
+      [data.datum, data.vozac_id, data.kamion_id, data.ruta_id, data.id]
+    );
+    return NextResponse.json(data);
   } catch (error) {
+    console.error('Failed to update putovanje:', error);
     return NextResponse.json({ error: 'Failed to update putovanje' }, { status: 500 });
   }
 }
@@ -66,6 +94,7 @@ export async function DELETE(request: NextRequest) {
     await connection.execute('DELETE FROM Putovanja WHERE id = ?', [id]);
     return NextResponse.json({ message: 'Putovanje deleted successfully' });
   } catch (error) {
+    console.error('Failed to delete putovanje:', error);
     return NextResponse.json({ error: 'Failed to delete putovanje' }, { status: 500 });
   }
 }

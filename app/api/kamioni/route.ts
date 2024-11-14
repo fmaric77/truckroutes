@@ -1,10 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getConnection } from '../../lib/db';
+import { RowDataPacket, ResultSetHeader } from 'mysql2';
+
+// Define interface for Kamioni table
+interface Kamion extends RowDataPacket {
+  id: number;
+  registracija: string;
+  datum_registracije: Date;
+}
 
 export async function GET() {
   const connection = await getConnection();
   try {
-    const [rows]: [any[], any] = await connection.execute('SELECT * FROM Kamioni');
+    const [rows] = await connection.execute<Kamion[]>('SELECT * FROM Kamioni');
     const formattedRows = rows.map(row => ({
       ...row,
       datum_registracije: new Date(row.datum_registracije).toLocaleDateString('en-GB', {
@@ -14,7 +22,8 @@ export async function GET() {
       }).replace(/\//g, '.')
     }));
     return NextResponse.json(formattedRows);
-  } catch (error) {
+  } catch (error: unknown) {
+    console.error('Error fetching kamioni:', error);
     return NextResponse.json({ error: 'Failed to fetch kamioni' }, { status: 500 });
   }
 }
@@ -24,9 +33,13 @@ export async function POST(request: NextRequest) {
   const { registracija, datum_registracije } = await request.json();
 
   try {
-    const [result]: any = await connection.execute('INSERT INTO Kamioni (registracija, datum_registracije) VALUES (?, ?)', [registracija, datum_registracije]);
+    const [result] = await connection.execute<ResultSetHeader>(
+      'INSERT INTO Kamioni (registracija, datum_registracije) VALUES (?, ?)',
+      [registracija, datum_registracije]
+    );
     return NextResponse.json({ id: result.insertId, registracija, datum_registracije }, { status: 201 });
-  } catch (error) {
+  } catch (error: unknown) {
+    console.error('Error adding kamion:', error);
     return NextResponse.json({ error: 'Failed to add kamion' }, { status: 500 });
   }
 }
@@ -36,9 +49,10 @@ export async function DELETE(request: NextRequest) {
   const { id } = await request.json();
 
   try {
-    await connection.execute('DELETE FROM Kamioni WHERE id = ?', [id]);
+    await connection.execute<ResultSetHeader>('DELETE FROM Kamioni WHERE id = ?', [id]);
     return NextResponse.json({ message: 'Kamion deleted successfully' });
-  } catch (error) {
+  } catch (error: unknown) {
+    console.error('Error deleting kamion:', error);
     return NextResponse.json({ error: 'Failed to delete kamion' }, { status: 500 });
   }
 }
