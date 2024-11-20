@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { FaWarehouse } from 'react-icons/fa'; // Assuming you have react-icons installed
 
 const logAction = async (action, adminId, skladisteInfo) => {
   console.log('Logging action:', action, 'Admin ID:', adminId, 'Skladiste Info:', skladisteInfo);
@@ -17,7 +18,6 @@ const logAction = async (action, adminId, skladisteInfo) => {
 
 const Skladista = ({ skladista = [], setSkladista, adminId }) => {
   const [showSkladisteInput, setShowSkladisteInput] = useState(false);
-  const [showSkladista, setShowSkladista] = useState(false);
   const [skladisteInput, setSkladisteInput] = useState({ naziv_skladista: '', lozinka_skladista: '' });
   const [errors, setErrors] = useState({});
 
@@ -72,44 +72,38 @@ const Skladista = ({ skladista = [], setSkladista, adminId }) => {
   };
 
   return (
-    <div className="mt-8">
+    <div className="mt-8 text-center">
       <h2 className="text-xl font-bold">Skladišta</h2>
-      <button onClick={() => setShowSkladisteInput(true)} className="bg-blue-500 text-white p-2 mt-2 rounded">
-        Dodaj novo skladište
-      </button>
-      <button onClick={() => setShowSkladista(!showSkladista)} className="bg-blue-500 text-white p-2 mt-2 rounded ml-2">
-        {showSkladista ? 'Sakrij' : 'Prikaži'} skladišta
-      </button>
+      <FaWarehouse 
+        onClick={() => setShowSkladisteInput(!showSkladisteInput)} 
+        className="text-6xl cursor-pointer mx-auto my-4" 
+      />
       {showSkladisteInput && (
-        <div className="mt-4">
-          <div className="flex flex-col mb-2">
-            <input
-              type="text"
-              placeholder="Naziv"
-              value={skladisteInput.naziv_skladista}
-              onChange={(e) => setSkladisteInput({ ...skladisteInput, naziv_skladista: e.target.value })}
-              className="border p-2 mr-2"
-              style={{ backgroundColor: 'black', color: 'white' }}
-            />
-            {errors.naziv_skladista && <span className="text-red-500 text-sm mt-1">{errors.naziv_skladista}</span>}
-          </div>
-          <div className="flex flex-col mb-2">
-            <input
-              type="password"
-              placeholder="Lozinka"
-              value={skladisteInput.lozinka_skladista}
-              onChange={(e) => setSkladisteInput({ ...skladisteInput, lozinka_skladista: e.target.value })}
-              className="border p-2 mr-2"
-              style={{ backgroundColor: 'black', color: 'white' }}
-            />
-            {errors.lozinka_skladista && <span className="text-red-500 text-sm mt-1">{errors.lozinka_skladista}</span>}
-          </div>
-          <button onClick={handleAddSkladiste} className="bg-green-500 text-white p-2 rounded">
-            Pošalji
+        <div className="mt-4 flex flex-col items-center">
+          <input
+            type="text"
+            placeholder="Naziv"
+            value={skladisteInput.naziv_skladista}
+            onChange={(e) => setSkladisteInput({ ...skladisteInput, naziv_skladista: e.target.value })}
+            className="border p-2 mb-2 w-full max-w-md"
+            style={{ backgroundColor: 'black', color: 'white' }}
+          />
+          {errors.naziv_skladista && <span className="text-red-500 text-sm mt-1">{errors.naziv_skladista}</span>}
+          <input
+            type="password"
+            placeholder="Lozinka"
+            value={skladisteInput.lozinka_skladista}
+            onChange={(e) => setSkladisteInput({ ...skladisteInput, lozinka_skladista: e.target.value })}
+            className="border p-2 mb-2 w-full max-w-md"
+            style={{ backgroundColor: 'black', color: 'white' }}
+          />
+          {errors.lozinka_skladista && <span className="text-red-500 text-sm mt-1">{errors.lozinka_skladista}</span>}
+          <button onClick={handleAddSkladiste} className="text-green-500 ml-2">
+            Dodaj
           </button>
         </div>
       )}
-      {showSkladista && (
+      {showSkladisteInput && (
         <ul className="mt-4">
           {skladista.map(skladiste => (
             <li key={skladiste.id} className="flex justify-between items-center border-b py-2">

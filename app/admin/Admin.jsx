@@ -1,10 +1,8 @@
-// app/admin/Admin.jsx
-
 import { useState } from 'react';
+import { FaUserShield } from 'react-icons/fa'; // Assuming you have react-icons installed
 
 const Admin = ({ admins = [], setAdmins, adminId }) => {
   const [showAdminInput, setShowAdminInput] = useState(false);
-  const [showAdmins, setShowAdmins] = useState(false);
   const [adminInput, setAdminInput] = useState({ ime: '', lozinka: '' });
 
   const validateAdminInput = () => {
@@ -99,22 +97,20 @@ const Admin = ({ admins = [], setAdmins, adminId }) => {
   };
 
   return (
-    <div className="mt-8">
+    <div className="mt-8 text-center">
       <h2 className="text-xl font-bold">Administratori</h2>
-      <button onClick={() => setShowAdminInput(true)} className="bg-blue-500 text-white p-2 mt-2 rounded">
-        Dodaj novog admina
-      </button>
-      <button onClick={() => setShowAdmins(!showAdmins)} className="bg-blue-500 text-white p-2 mt-2 rounded ml-2">
-        {showAdmins ? 'Sakrij' : 'Prikaži'} admine
-      </button>
+      <FaUserShield 
+        onClick={() => setShowAdminInput(!showAdminInput)} 
+        className="text-6xl cursor-pointer mx-auto my-4" 
+      />
       {showAdminInput && (
-        <div className="mt-4">
+        <div className="mt-4 flex flex-col items-center">
           <input
             type="text"
             placeholder="Ime"
             value={adminInput.ime}
             onChange={(e) => setAdminInput({ ...adminInput, ime: e.target.value })}
-            className="border p-2 mr-2"
+            className="border p-2 mb-2 w-full max-w-md"
             style={{ backgroundColor: 'black', color: 'white' }}
           />
           <input
@@ -122,15 +118,15 @@ const Admin = ({ admins = [], setAdmins, adminId }) => {
             placeholder="Lozinka"
             value={adminInput.lozinka}
             onChange={(e) => setAdminInput({ ...adminInput, lozinka: e.target.value })}
-            className="border p-2 mr-2"
+            className="border p-2 mb-2 w-full max-w-md"
             style={{ backgroundColor: 'black', color: 'white' }}
           />
-          <button onClick={handleAddAdmin} className="bg-green-500 text-white p-2 rounded">
-            Pošalji
+          <button onClick={handleAddAdmin} className="text-green-500 ml-2">
+            Dodaj
           </button>
         </div>
       )}
-      {showAdmins && (
+      {showAdminInput && (
         <ul className="mt-4">
           {admins.map(admin => (
             <li key={admin.id} className="flex justify-between items-center border-b py-2">
