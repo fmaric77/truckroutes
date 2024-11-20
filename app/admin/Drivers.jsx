@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { FaUser } from 'react-icons/fa'; // Assuming you have react-icons installed
 
 const ErrorMessage = ({ message }) => (
   <div className="text-red-500 text-sm mt-1">{message}</div>
@@ -21,7 +22,6 @@ const logAction = async (action, adminId, driverInfo) => {
 
 const Drivers = ({ drivers = [], setDrivers, adminId }) => {
   const [showDriverInput, setShowDriverInput] = useState(false);
-  const [showDrivers, setShowDrivers] = useState(false);
   const [driverInput, setDriverInput] = useState({ 
     ime_vozaca: '', 
     prezime_vozaca: '', 
@@ -129,74 +129,57 @@ const Drivers = ({ drivers = [], setDrivers, adminId }) => {
   };
 
   return (
-    <div className="mt-8">
+    <div className="mt-8 text-center">
       <h2 className="text-xl font-bold">Vozači</h2>
-      <button onClick={() => setShowDriverInput(true)} className="bg-blue-500 text-white p-2 mt-2 rounded">
-        Dodaj novog vozača
-      </button>
-      <button onClick={() => setShowDrivers(!showDrivers)} className="bg-blue-500 text-white p-2 mt-2 rounded ml-2">
-        {showDrivers ? 'Sakrij' : 'Prikaži'} vozače
-      </button>
-      
+      <FaUser 
+        onClick={() => setShowDriverInput(!showDriverInput)} 
+        className="text-6xl cursor-pointer mx-auto my-4" 
+      />
       {showDriverInput && (
-        <div className="mt-4 space-y-4">
-          <div className="flex flex-col">
-            <input
-              type="text"
-              placeholder="Ime"
-              value={driverInput.ime_vozaca}
-              onChange={(e) => setDriverInput({ ...driverInput, ime_vozaca: e.target.value })}
-              className="border p-2 mr-2"
-              style={{ backgroundColor: 'black', color: 'white' }}
-            />
-            {errors.ime_vozaca && <ErrorMessage message={errors.ime_vozaca} />}
-          </div>
-
-          <div className="flex flex-col">
-            <input
-              type="text"
-              placeholder="Prezime"
-              value={driverInput.prezime_vozaca}
-              onChange={(e) => setDriverInput({ ...driverInput, prezime_vozaca: e.target.value })}
-              className="border p-2 mr-2"
-              style={{ backgroundColor: 'black', color: 'white' }}
-            />
-            {errors.prezime_vozaca && <ErrorMessage message={errors.prezime_vozaca} />}
-          </div>
-
-          <div className="flex flex-col">
-            <input
-              type="text"
-              placeholder="OIB"
-              value={driverInput.oib_vozaca}
-              onChange={(e) => setDriverInput({ ...driverInput, oib_vozaca: e.target.value })}
-              className="border p-2 mr-2"
-              style={{ backgroundColor: 'black', color: 'white' }}
-            />
-            {errors.oib_vozaca && <ErrorMessage message={errors.oib_vozaca} />}
-          </div>
-
-          <div className="flex flex-col">
-            <input
-              type="password"
-              placeholder="Lozinka"
-              value={driverInput.lozinka_vozaca}
-              onChange={(e) => setDriverInput({ ...driverInput, lozinka_vozaca: e.target.value })}
-              className="border p-2 mr-2"
-              style={{ backgroundColor: 'black', color: 'white' }}
-            />
-            {errors.lozinka_vozaca && <ErrorMessage message={errors.lozinka_vozaca} />}
-          </div>
-
+        <div className="mt-4 flex flex-col items-center">
+          <input
+            type="text"
+            placeholder="Ime"
+            value={driverInput.ime_vozaca}
+            onChange={(e) => setDriverInput({ ...driverInput, ime_vozaca: e.target.value })}
+            className="border p-2 mb-2 w-full max-w-md"
+            style={{ backgroundColor: 'black', color: 'white' }}
+          />
+          {errors.ime_vozaca && <ErrorMessage message={errors.ime_vozaca} />}
+          <input
+            type="text"
+            placeholder="Prezime"
+            value={driverInput.prezime_vozaca}
+            onChange={(e) => setDriverInput({ ...driverInput, prezime_vozaca: e.target.value })}
+            className="border p-2 mb-2 w-full max-w-md"
+            style={{ backgroundColor: 'black', color: 'white' }}
+          />
+          {errors.prezime_vozaca && <ErrorMessage message={errors.prezime_vozaca} />}
+          <input
+            type="text"
+            placeholder="OIB"
+            value={driverInput.oib_vozaca}
+            onChange={(e) => setDriverInput({ ...driverInput, oib_vozaca: e.target.value })}
+            className="border p-2 mb-2 w-full max-w-md"
+            style={{ backgroundColor: 'black', color: 'white' }}
+          />
+          {errors.oib_vozaca && <ErrorMessage message={errors.oib_vozaca} />}
+          <input
+            type="password"
+            placeholder="Lozinka"
+            value={driverInput.lozinka_vozaca}
+            onChange={(e) => setDriverInput({ ...driverInput, lozinka_vozaca: e.target.value })}
+            className="border p-2 mb-2 w-full max-w-md"
+            style={{ backgroundColor: 'black', color: 'white' }}
+          />
+          {errors.lozinka_vozaca && <ErrorMessage message={errors.lozinka_vozaca} />}
           {errors.submit && <ErrorMessage message={errors.submit} />}
-
-          <button onClick={handleAddDriver} className="bg-green-500 text-white p-2 rounded">
-            Pošalji
+          <button onClick={handleAddDriver} className="text-green-500 ml-2">
+            Dodaj
           </button>
         </div>
       )}
-
-      {showDrivers && (
+      {showDriverInput && (
         <ul className="mt-4">
           {drivers.map(driver => (
             <li key={driver.id} className="flex justify-between items-center border-b py-2">

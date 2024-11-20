@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { FaTruck } from 'react-icons/fa'; // Assuming you have react-icons installed
 
 const logAction = async (action, adminId, truckInfo) => {
   console.log('Logging action:', action, 'Admin ID:', adminId, 'Truck Info:', truckInfo);
@@ -25,7 +26,6 @@ const formatDate = (dateString) => {
 
 const Trucks = ({ trucks, setTrucks, adminId }) => {
   const [showTruckInput, setShowTruckInput] = useState(false);
-  const [showTrucks, setShowTrucks] = useState(false);
   const [truckInput, setTruckInput] = useState({ registracija: '', datum_registracije: '' });
   const [errors, setErrors] = useState({});
 
@@ -35,8 +35,6 @@ const Trucks = ({ trucks, setTrucks, adminId }) => {
 
     if (!truckInput.registracija) {
       newErrors.registracija = 'Registracija je obavezna.';
-    } else if (!/^[a-zA-Z0-9]{6,12}$/.test(truckInput.registracija)) {
-      newErrors.registracija = 'Registracija mora imati između 6 i 12 alfanumeričkih znakova.';
     }
 
     if (!truckInput.datum_registracije) {
@@ -63,7 +61,6 @@ const Trucks = ({ trucks, setTrucks, adminId }) => {
     if (res.ok) {
       const newTruck = await res.json();
       setTrucks([...trucks, newTruck]);
-      setShowTruckInput(false);
       setTruckInput({ registracija: '', datum_registracije: '' });
       await logAction(`Kamion dodan: ${registracija}`, adminId, { registracija, datum_registracije });
     }
@@ -87,22 +84,20 @@ const Trucks = ({ trucks, setTrucks, adminId }) => {
   };
 
   return (
-    <div className="mt-8">
+    <div className="mt-8 text-center">
       <h2 className="text-xl font-bold">Kamioni</h2>
-      <button onClick={() => setShowTruckInput(true)} className="bg-blue-500 text-white p-2 mt-2 rounded">
-        Dodaj novi kamion
-      </button>
-      <button onClick={() => setShowTrucks(!showTrucks)} className="bg-blue-500 text-white p-2 mt-2 rounded ml-2">
-        {showTrucks ? 'Sakrij' : 'Prikaži'} kamione
-      </button>
+      <FaTruck 
+        onClick={() => setShowTruckInput(!showTruckInput)} 
+        className="text-6xl cursor-pointer mx-auto my-4" 
+      />
       {showTruckInput && (
-        <div className="mt-4">
+        <div className="mt-4 flex flex-col items-center">
           <input
             type="text"
             placeholder="Registracija"
             value={truckInput.registracija}
             onChange={(e) => setTruckInput({ ...truckInput, registracija: e.target.value })}
-            className="border p-2 mr-2"
+            className="border p-2 mb-2 w-full max-w-md"
             style={{ backgroundColor: 'black', color: 'white' }}
           />
           {errors.registracija && <p className="text-red-500">{errors.registracija}</p>}
@@ -111,16 +106,16 @@ const Trucks = ({ trucks, setTrucks, adminId }) => {
             placeholder="Datum registracije"
             value={truckInput.datum_registracije}
             onChange={(e) => setTruckInput({ ...truckInput, datum_registracije: e.target.value })}
-            className="border p-2 mr-2"
+            className="border p-2 mb-2 w-full max-w-md"
             style={{ backgroundColor: 'black', color: 'white' }}
           />
           {errors.datum_registracije && <p className="text-red-500">{errors.datum_registracije}</p>}
-          <button onClick={handleAddTruck} className="bg-green-500 text-white p-2 rounded">
-            Pošalji
+          <button onClick={handleAddTruck} className="text-green-500 ml-2">
+            Dodaj
           </button>
         </div>
       )}
-      {showTrucks && (
+      {showTruckInput && (
         <ul className="mt-4">
           {trucks.map(truck => (
             <li key={truck.id} className="flex justify-between items-center border-b py-2">

@@ -33,59 +33,32 @@ const AdminPanel = () => {
       setAdmin(JSON.parse(storedAdmin));
     }
 
-    const fetchData = async () => {
-      try {
-        const routesRes = await fetch('/api/rute');
-        if (routesRes.ok) {
-          const routesData = await routesRes.json();
-          setRoutes(routesData);
-        }
+const fetchData = async () => {
+  try {
+    const endpoints = [
+      { url: '/api/rute', setter: setRoutes },
+      { url: '/api/putovanja', setter: setPutovanja },
+      { url: '/api/vozaci', setter: setDrivers },
+      { url: '/api/kamioni', setter: setTrucks },
+      { url: '/api/trgovine', setter: setStores },
+      { url: '/api/rute', setter: setSpremneRute },
+      { url: '/api/skladista', setter: setSkladista },
+      { url: '/api/admins', setter: setAdmins },
+    ];
 
-        const putovanjaRes = await fetch('/api/putovanja');
-        if (putovanjaRes.ok) {
-          const putovanjaData = await putovanjaRes.json();
-          setPutovanja(putovanjaData);
-        }
+    const fetchPromises = endpoints.map(endpoint =>
+      fetch(endpoint.url).then(res => res.ok ? res.json() : Promise.reject(res))
+    );
 
-        const driversRes = await fetch('/api/vozaci');
-        if (driversRes.ok) {
-          const driversData = await driversRes.json();
-          setDrivers(driversData);
-        }
+    const results = await Promise.all(fetchPromises);
 
-        const trucksRes = await fetch('/api/kamioni');
-        if (trucksRes.ok) {
-          const trucksData = await trucksRes.json();
-          setTrucks(trucksData);
-        }
-
-        const storesRes = await fetch('/api/trgovine');
-        if (storesRes.ok) {
-          const storesData = await storesRes.json();
-          setStores(storesData);
-        }
-
-        const spremneRuteRes = await fetch('/api/rute');
-        if (spremneRuteRes.ok) {
-          const spremneRuteData = await spremneRuteRes.json();
-          setSpremneRute(spremneRuteData);
-        }
-
-        const skladistaRes = await fetch('/api/skladista');
-        if (skladistaRes.ok) {
-          const skladistaData = await skladistaRes.json();
-          setSkladista(skladistaData);
-        }
-
-        const adminsRes = await fetch('/api/admins');
-        if (adminsRes.ok) {
-          const adminsData = await adminsRes.json();
-          setAdmins(adminsData);
-        }
-      } catch (error) {
-        console.error('Failed to fetch data:', error);
-      }
-    };
+    results.forEach((data, index) => {
+      endpoints[index].setter(data);
+    });
+  } catch (error) {
+    console.error('Failed to fetch data:', error);
+  }
+};
 
     fetchData();
   }, [router]);

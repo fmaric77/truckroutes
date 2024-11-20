@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { FaStore } from 'react-icons/fa'; // Assuming you have react-icons installed
 
 const logAction = async (action, adminId, storeInfo) => {
   console.log('Logging action:', action, 'Admin ID:', adminId, 'Store Info:', storeInfo);
@@ -17,7 +18,6 @@ const logAction = async (action, adminId, storeInfo) => {
 
 const Stores = ({ stores, setStores, adminId }) => {
   const [showStoreInput, setShowStoreInput] = useState(false);
-  const [showStores, setShowStores] = useState(false);
   const [storeInput, setStoreInput] = useState({ ime_trgovine: '', adresa: '' });
   const [errors, setErrors] = useState({});
 
@@ -78,48 +78,42 @@ const Stores = ({ stores, setStores, adminId }) => {
   };
 
   return (
-    <div className="mt-8">
+    <div className="mt-8 text-center">
       <h2 className="text-xl font-bold">Trgovine</h2>
-      <button onClick={() => setShowStoreInput(true)} className="bg-blue-500 text-white p-2 mt-2 rounded">
-        Dodaj novu trgovinu
-      </button>
-      <button onClick={() => setShowStores(!showStores)} className="bg-blue-500 text-white p-2 mt-2 rounded ml-2">
-        {showStores ? 'Sakrij' : 'Prikaži'} trgovine
-      </button>
+      <FaStore 
+        onClick={() => setShowStoreInput(!showStoreInput)} 
+        className="text-6xl cursor-pointer mx-auto my-4" 
+      />
       {showStoreInput && (
-        <div className="mt-4 space-y-4">
-          <div>
-            <input
-              type="text"
-              placeholder="Ime trgovine"
-              value={storeInput.ime_trgovine}
-              onChange={(e) => setStoreInput({ ...storeInput, ime_trgovine: e.target.value })}
-              className="border p-2 mr-2 w-64"
-              style={{ backgroundColor: 'black', color: 'white' }}
-            />
-            {errors.ime_trgovine && (
-              <div className="text-red-500 text-sm mt-1">{errors.ime_trgovine}</div>
-            )}
-          </div>
-          <div>
-            <input
-              type="text"
-              placeholder="Adresa"
-              value={storeInput.adresa}
-              onChange={(e) => setStoreInput({ ...storeInput, adresa: e.target.value })}
-              className="border p-2 mr-2 w-64"
-              style={{ backgroundColor: 'black', color: 'white' }}
-            />
-            {errors.adresa && (
-              <div className="text-red-500 text-sm mt-1">{errors.adresa}</div>
-            )}
-          </div>
-          <button onClick={handleAddStore} className="bg-green-500 text-white p-2 rounded">
-            Pošalji
+        <div className="mt-4 flex flex-col items-center">
+          <input
+            type="text"
+            placeholder="Ime trgovine"
+            value={storeInput.ime_trgovine}
+            onChange={(e) => setStoreInput({ ...storeInput, ime_trgovine: e.target.value })}
+            className="border p-2 mb-2 w-full max-w-md"
+            style={{ backgroundColor: 'black', color: 'white' }}
+          />
+          {errors.ime_trgovine && (
+            <div className="text-red-500 text-sm mt-1">{errors.ime_trgovine}</div>
+          )}
+          <input
+            type="text"
+            placeholder="Adresa"
+            value={storeInput.adresa}
+            onChange={(e) => setStoreInput({ ...storeInput, adresa: e.target.value })}
+            className="border p-2 mb-2 w-full max-w-md"
+            style={{ backgroundColor: 'black', color: 'white' }}
+          />
+          {errors.adresa && (
+            <div className="text-red-500 text-sm mt-1">{errors.adresa}</div>
+          )}
+          <button onClick={handleAddStore} className="text-green-500 ml-2">
+            Dodaj
           </button>
         </div>
       )}
-      {showStores && (
+      {showStoreInput && (
         <ul className="mt-4">
           {stores.map(store => (
             <li key={store.id} className="flex justify-between items-center border-b py-2">

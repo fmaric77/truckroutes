@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { FaRoute } from 'react-icons/fa'; // Assuming you have react-icons installed
 
 const logAction = async (action, adminId, routeInfo) => {
   console.log('Logging action:', action, 'Admin ID:', adminId, 'Route Info:', routeInfo);
@@ -17,7 +18,6 @@ const logAction = async (action, adminId, routeInfo) => {
 
 const Route = ({ routes, setRoutes, stores, adminId }) => {
   const [showRouteInput, setShowRouteInput] = useState(false);
-  const [showRoutes, setShowRoutes] = useState(false);
   const [routeInput, setRouteInput] = useState({ opis: '', selectedStores: [''] });
   const [errors, setErrors] = useState({});
 
@@ -25,7 +25,6 @@ const Route = ({ routes, setRoutes, stores, adminId }) => {
     const newErrors = {};
     if (routeInput.selectedStores.some(store => !store)) {
       newErrors.selectedStores = 'Sva polja trgovina moraju biti odabrana.';
-      
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -101,30 +100,28 @@ const Route = ({ routes, setRoutes, stores, adminId }) => {
   };
 
   return (
-    <div className="mt-8">
+    <div className="mt-8 text-center">
       <h2 className="text-xl font-bold">Rute</h2>
-      <button onClick={() => setShowRouteInput(true)} className="bg-blue-500 text-white p-2 mt-2 rounded">
-        Dodaj novu rutu
-      </button>
-      <button onClick={() => setShowRoutes(!showRoutes)} className="bg-blue-500 text-white p-2 mt-2 rounded ml-2">
-        {showRoutes ? 'Sakrij' : 'Prikaži'} rute
-      </button>
+      <FaRoute 
+        onClick={() => setShowRouteInput(!showRouteInput)} 
+        className="text-6xl cursor-pointer mx-auto my-4" 
+      />
       {showRouteInput && (
-        <div className="mt-4">
+        <div className="mt-4 flex flex-col items-center">
           <input
             type="text"
             placeholder="Opis (opcionalno)"
             value={routeInput.opis}
             onChange={(e) => setRouteInput({ ...routeInput, opis: e.target.value })}
-            className="border p-2 mr-2"
+            className="border p-2 mb-2 w-full max-w-md"
             style={{ backgroundColor: 'black', color: 'white' }}
           />
           {routeInput.selectedStores.map((store, index) => (
-            <div key={index} className="flex items-center mb-2">
+            <div key={index} className="flex items-center mb-2 w-full max-w-md">
               <select
                 value={store}
                 onChange={(e) => handleStoreChange(index, e.target.value)}
-                className="border p-2 mr-2 bg-black text-white"
+                className="border p-2 mr-2 w-full bg-black text-white"
               >
                 <option value="">Odaberi trgovinu</option>
                 {stores.map(store => (
@@ -139,15 +136,15 @@ const Route = ({ routes, setRoutes, stores, adminId }) => {
             </div>
           ))}
           {errors.selectedStores && <p className="text-red-500">{errors.selectedStores}</p>}
-          <button onClick={handleAddStoreField} className="bg-green-500 text-white p-2 rounded">
+          <button onClick={handleAddStoreField} className="text-blue-500 ml-2">
             Dodaj trgovinu
           </button>
-          <button onClick={handleAddRoute} className="bg-green-500 text-white p-2 rounded ml-2">
-            Pošalji
+          <button onClick={handleAddRoute} className="text-green-500 ml-2">
+            Dodaj rutu
           </button>
         </div>
       )}
-      {showRoutes && (
+      {showRouteInput && (
         <ul className="mt-4">
           {routes.map(route => (
             <li key={route.id} className="flex justify-between items-center border-b py-2">
