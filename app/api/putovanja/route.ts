@@ -22,6 +22,8 @@ interface PutovanjeInput {
 export async function GET() {
   const connection = await getConnection();
   try {
+    const currentDate = new Date();
+
     const [rows]: [PutovanjeRow[], FieldPacket[]] = await connection.execute<PutovanjeRow[]>(`
       SELECT 
         p.id, 
@@ -42,7 +44,30 @@ export async function GET() {
         v.status != 'neaktivan'
     `);
 
-    const formattedRows = rows.map((row) => ({
+    const futureTrips: PutovanjeRow[] = [];
+
+    for (const row of rows) {
+      const tripDate = new Date(row.datum);
+      if (tripDate < currentDate) {
+        const tripInfo = `Datum: ${tripDate.toISOString().split('T')[0]}, Vozač: ${row.vozac_ime} ${row.vozac_prezime}, Kamion: ${row.registracija}, Ruta: ${row.ruta}`;
+        
+        // Save the concatenated string to PovijestPutovanja
+        await connection.execute<ResultSetHeader>(
+          'INSERT INTO PovijestPutovanja (tekst) VALUES (?)',
+          [tripInfo]
+        );
+
+        // Remove the past trip from Putovanja
+        await connection.execute(
+          'DELETE FROM Putovanja WHERE id = ?',
+          [row.id]
+        );
+      } else {
+        futureTrips.push(row);
+      }
+    }
+
+    const formattedRows = futureTrips.map((row) => ({
       ...row,
       datum: new Date(row.datum).toLocaleDateString('en-GB', {
         day: '2-digit',
@@ -50,6 +75,7 @@ export async function GET() {
         year: 'numeric'
       }).replace(/\//g, '.')
     }));
+
     return NextResponse.json(formattedRows);
   } catch (error) {
     console.error('Failed to fetch putovanja:', error);
