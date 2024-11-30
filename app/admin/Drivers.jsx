@@ -197,18 +197,18 @@ const Drivers = ({ drivers = [], setDrivers, adminId }) => {
       {showDriverInput && (
         <ul className="mt-4">
           {drivers.map(driver => (
-            <li key={driver.id} className="flex justify-between items-center border-b py-2">
-              {driver.ime_vozaca} {driver.prezime_vozaca} - Status: 
-              <span 
-                onClick={() => handleToggleStatus(driver.id, driver.status)} 
-                className="cursor-pointer text-blue-500"
-              >
-                {driver.status}
-              </span>
-              <button onClick={() => handleRemoveDriver(driver.id)} className="text-red-500 ml-2">
-                Ukloni
-              </button>
-            </li>
+      <li key={driver.id} className="flex justify-between items-center border-b py-2">
+      {driver.ime_vozaca} {driver.prezime_vozaca} (OIB: {driver.oib_vozaca}) - Status: 
+      <span 
+        onClick={() => handleToggleStatus(driver.id, driver.status)} 
+        className="cursor-pointer text-blue-500"
+      >
+        {driver.status}
+      </span>
+      <button onClick={() => handleRemoveDriver(driver.id)} className="text-red-500 ml-2">
+        Ukloni
+      </button>
+    </li>
           ))}
         </ul>
       )}
