@@ -8,7 +8,7 @@ export async function GET(req: Request) {
   const params = url.searchParams;
 
   let query = 'SELECT * FROM PovijestPutovanja WHERE 1=1';
-  const queryParams: any[] = [];
+  const queryParams: string[] = [];
 
   params.forEach((value, key) => {
     if (value) {

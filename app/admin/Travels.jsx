@@ -1,7 +1,8 @@
-import { useState} from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBook, faTasks } from '@fortawesome/free-solid-svg-icons';
+
 const logAction = async (action, adminId, putovanjeInfo) => {
   console.log('Logging action:', action, 'Admin ID:', adminId, 'Putovanje Info:', putovanjeInfo);
   try {
@@ -25,11 +26,10 @@ const Travels = ({ putovanja, setPutovanja, drivers, trucks, spremneRute, adminI
 
   const validatePutovanjeInput = () => {
     const newErrors = {};
-    const today = new Date().toISOString().split('T')[0];
 
     if (!putovanjeInput.datum) {
       newErrors.datum = 'Datum je obavezan.';
-    } 
+    }
     if (!putovanjeInput.vozac_id) {
       newErrors.vozac_id = 'Vozač je obavezan.';
     }
@@ -84,16 +84,14 @@ const Travels = ({ putovanja, setPutovanja, drivers, trucks, spremneRute, adminI
     }
   };
 
-  
-
   const handleRemovePutovanje = async (id) => {
     const putovanjeToRemove = putovanja.find(p => p.id === id);
     if (!putovanjeToRemove) return;
-  
+
     const isConfirmed = window.confirm('Jeste li sigurni da želite izbrisati ovo putovanje?');
-    
+
     if (!isConfirmed) return;
-  
+
     try {
       const res = await fetch('/api/putovanja', {
         method: 'DELETE',
@@ -102,12 +100,12 @@ const Travels = ({ putovanja, setPutovanja, drivers, trucks, spremneRute, adminI
         },
         body: JSON.stringify({ id }),
       });
-  
+
       if (res.status === 500) {
         setErrors({ ...errors, submit: 'Ne možete izbrisati putovanje koje je na ruti.' });
         return;
       }
-  
+
       if (res.ok) {
         setPutovanja(putovanja.filter(p => p.id !== id));
         await logAction(`Putovanje uklonjeno: ${id}`, adminId, {
