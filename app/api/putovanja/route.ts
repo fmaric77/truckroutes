@@ -7,6 +7,7 @@ interface PutovanjeRow extends RowDataPacket {
   datum: Date;
   vozac_ime: string;
   vozac_prezime: string;
+  vozac_oib: string;
   registracija: string;
   ruta: string;
 }
@@ -24,12 +25,34 @@ export async function GET() {
   try {
     const currentDate = new Date();
 
+    // Move past trips to PovijestPutovanja
+    await connection.execute(
+      `
+      INSERT INTO PovijestPutovanja (OIB, ime_vozaca, prezime_vozaca, registracija, ruta, datum)
+      SELECT v.oib_vozaca, v.ime_vozaca, v.prezime_vozaca, k.registracija, sr.ruta, p.datum
+      FROM Putovanja p
+      JOIN Vozaci v ON p.vozac_id = v.id
+      JOIN Kamioni k ON p.kamion_id = k.id
+      JOIN SpremneRute sr ON p.ruta_id = sr.id
+      WHERE p.datum < ?
+      `,
+      [currentDate]
+    );
+
+    // Delete past trips from Putovanja
+    await connection.execute(
+      'DELETE FROM Putovanja WHERE datum < ?',
+      [currentDate]
+    );
+
+    // Fetch future trips
     const [rows]: [PutovanjeRow[], FieldPacket[]] = await connection.execute<PutovanjeRow[]>(`
       SELECT 
         p.id, 
         p.datum, 
         v.ime_vozaca AS vozac_ime, 
         v.prezime_vozaca AS vozac_prezime, 
+        v.oib_vozaca AS vozac_oib,
         k.registracija, 
         sr.ruta 
       FROM 
@@ -42,32 +65,11 @@ export async function GET() {
         SpremneRute sr ON p.ruta_id = sr.id
       WHERE 
         v.status != 'neaktivan'
-    `);
+        AND p.datum >= ?
+    `, [currentDate]);
 
-    const futureTrips: PutovanjeRow[] = [];
-
-    for (const row of rows) {
-      const tripDate = new Date(row.datum);
-      if (tripDate < currentDate) {
-        const tripInfo = `Datum: ${tripDate.toISOString().split('T')[0]}, Vozač: ${row.vozac_ime} ${row.vozac_prezime}, Kamion: ${row.registracija}, Ruta: ${row.ruta}`;
-        
-        // Save the concatenated string to PovijestPutovanja
-        await connection.execute<ResultSetHeader>(
-          'INSERT INTO PovijestPutovanja (tekst) VALUES (?)',
-          [tripInfo]
-        );
-
-        // Remove the past trip from Putovanja
-        await connection.execute(
-          'DELETE FROM Putovanja WHERE id = ?',
-          [row.id]
-        );
-      } else {
-        futureTrips.push(row);
-      }
-    }
-
-    const formattedRows = futureTrips.map((row) => ({
+    // Format dates
+    const formattedRows = rows.map((row) => ({
       ...row,
       datum: new Date(row.datum).toLocaleDateString('en-GB', {
         day: '2-digit',

@@ -14,6 +14,10 @@ const Admin = ({ admins = [], setAdmins, adminId }) => {
       alert('Lozinka je obavezna.');
       return false;
     }
+    if (admins.some(admin => admin.ime === adminInput.ime)) {
+      alert('Administrator s tim imenom već postoji.');
+      return false;
+    }
     return true;
   };
 
@@ -81,6 +85,8 @@ const Admin = ({ admins = [], setAdmins, adminId }) => {
       alert('Ne možete izbrisati sami sebe.');
       return;
     }
+
+    if (!window.confirm('Jeste li sigurni?')) return;
 
     const adminToDelete = admins.find(admin => admin.id === id);
     const res = await fetch('/api/admins', {

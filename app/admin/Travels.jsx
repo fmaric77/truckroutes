@@ -1,5 +1,7 @@
 import { useState} from 'react';
-
+import Link from 'next/link';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faBook, faTasks } from '@fortawesome/free-solid-svg-icons';
 const logAction = async (action, adminId, putovanjeInfo) => {
   console.log('Logging action:', action, 'Admin ID:', adminId, 'Putovanje Info:', putovanjeInfo);
   try {
@@ -27,9 +29,7 @@ const Travels = ({ putovanja, setPutovanja, drivers, trucks, spremneRute, adminI
 
     if (!putovanjeInput.datum) {
       newErrors.datum = 'Datum je obavezan.';
-    } else if (putovanjeInput.datum < today) {
-      newErrors.datum = 'Datum ne može biti u prošlosti.';
-    }
+    } 
     if (!putovanjeInput.vozac_id) {
       newErrors.vozac_id = 'Vozač je obavezan.';
     }
@@ -89,35 +89,60 @@ const Travels = ({ putovanja, setPutovanja, drivers, trucks, spremneRute, adminI
   const handleRemovePutovanje = async (id) => {
     const putovanjeToRemove = putovanja.find(p => p.id === id);
     if (!putovanjeToRemove) return;
-
-    const res = await fetch('/api/putovanja', {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ id }),
-    });
-    if (res.ok) {
-      setPutovanja(putovanja.filter(p => p.id !== id));
-      await logAction(`Putovanje uklonjeno: ${id}`, adminId, {
-        id,
-        datum: putovanjeToRemove.datum,
-        vozac: getDriverName(putovanjeToRemove.vozac_id),
-        kamion: getTruckRegistration(putovanjeToRemove.kamion_id),
-        ruta: getRouteName(putovanjeToRemove.ruta_id),
+  
+    const isConfirmed = window.confirm('Jeste li sigurni da želite izbrisati ovo putovanje?');
+    
+    if (!isConfirmed) return;
+  
+    try {
+      const res = await fetch('/api/putovanja', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id }),
       });
+  
+      if (res.status === 500) {
+        setErrors({ ...errors, submit: 'Ne možete izbrisati putovanje koje je na ruti.' });
+        return;
+      }
+  
+      if (res.ok) {
+        setPutovanja(putovanja.filter(p => p.id !== id));
+        await logAction(`Putovanje uklonjeno: ${id}`, adminId, {
+          id,
+          datum: putovanjeToRemove.datum,
+          vozac: getDriverName(putovanjeToRemove.vozac_id),
+          kamion: getTruckRegistration(putovanjeToRemove.kamion_id),
+          ruta: getRouteName(putovanjeToRemove.ruta_id),
+        });
+      }
+    } catch (error) {
+      console.error('Error removing travel:', error);
+      setErrors({ ...errors, submit: 'Došlo je do greške prilikom uklanjanja putovanja.' });
     }
   };
 
   return (
     <div className="mt-8">
-      <h2 className="text-xl font-bold">Putovanja</h2>
-      <button onClick={() => setShowPutovanjeInput(true)} className="bg-blue-500 text-white p-2 mt-2 rounded">
-        Dodaj novo putovanje
-      </button>
-      <button onClick={() => setShowPutovanja(!showPutovanja)} className="bg-blue-500 text-white p-2 mt-2 rounded ml-2">
-        {showPutovanja ? 'Sakrij' : 'Prikaži'} putovanja
-      </button>
+      <div className="flex justify-between items-center">
+        <h2 className="text-xl font-bold">Putovanja</h2>
+        <FontAwesomeIcon
+          icon={faTasks}
+          className="text-blue-500 text-4xl cursor-pointer mx-4"
+          onClick={() => {
+            setShowPutovanjeInput(!showPutovanjeInput);
+            setShowPutovanja(!showPutovanja);
+          }}
+        />
+        <Link legacyBehavior href="/admin/povijestputovanja">
+          <a className="bg-green-500 text-white p-2 rounded items-center">
+            <FontAwesomeIcon icon={faBook} className="mr-2" />
+            Povijest
+          </a>
+        </Link>
+      </div>
       {showPutovanjeInput && (
         <div className="mt-4">
           <input
@@ -173,6 +198,7 @@ const Travels = ({ putovanja, setPutovanja, drivers, trucks, spremneRute, adminI
           </button>
         </div>
       )}
+      {errors.submit && <p className="text-red-500 mt-4">{errors.submit}</p>}
       {showPutovanja && (
         <ul className="mt-4">
           {putovanja.map(p => (

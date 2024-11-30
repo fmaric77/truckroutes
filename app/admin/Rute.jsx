@@ -61,18 +61,33 @@ const Route = ({ routes, setRoutes, stores, adminId }) => {
   const handleRemoveRoute = async (id) => {
     const routeToRemove = routes.find(route => route.id === id);
     if (!routeToRemove) return;
-
-    const storeNames = getStoreNames(routeToRemove.selectedStores || []);
-    const res = await fetch('/api/rute', {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ id }),
-    });
-    if (res.ok) {
-      setRoutes(routes.filter(route => route.id !== id));
-      await logAction(`Ruta uklonjena: ${routeToRemove.opis || 'Nema opisa'}`, adminId, { opis: routeToRemove.opis, selectedStores: storeNames });
+  
+    const isConfirmed = window.confirm('Jeste li sigurni da želite izbrisati ovu rutu?');
+    
+    if (!isConfirmed) return;
+  
+    try {
+      const res = await fetch('/api/rute', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id }),
+      });
+  
+      if (res.status === 500) {
+        setErrors({ ...errors, submit: 'Ne možete izbrisati rutu koja dodijeljena budućem putovanju.' });
+        return;
+      }
+  
+      if (res.ok) {
+        setRoutes(routes.filter(route => route.id !== id));
+        const storeNames = getStoreNames(routeToRemove.selectedStores || []);
+        await logAction(`Ruta uklonjena: ${routeToRemove.opis || 'Nema opisa'}`, adminId, { opis: routeToRemove.opis, selectedStores: storeNames });
+      }
+    } catch (error) {
+      console.error('Error removing route:', error);
+      setErrors({ ...errors, submit: 'Došlo je do greške prilikom uklanjanja rute.' });
     }
   };
 
@@ -144,6 +159,7 @@ const Route = ({ routes, setRoutes, stores, adminId }) => {
           </button>
         </div>
       )}
+      {errors.submit && <p className="text-red-500 mt-4">{errors.submit}</p>}
       {showRouteInput && (
         <ul className="mt-4">
           {routes.map(route => (

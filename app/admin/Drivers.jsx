@@ -90,20 +90,35 @@ const Drivers = ({ drivers = [], setDrivers, adminId }) => {
 
   const handleRemoveDriver = async (id) => {
     const driverToRemove = drivers.find(driver => driver.id === id);
-    const res = await fetch('/api/vozaci', {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ id }),
-    });
-    if (res.ok) {
-      setDrivers(drivers.filter(driver => driver.id !== id));
-      await logAction(`Vozac uklonjen: ${driverToRemove.ime_vozaca} ${driverToRemove.prezime_vozaca} (OIB: ${driverToRemove.oib_vozaca})`, adminId, { 
-        ime_vozaca: driverToRemove.ime_vozaca, 
-        prezime_vozaca: driverToRemove.prezime_vozaca, 
-        oib_vozaca: driverToRemove.oib_vozaca 
+    const isConfirmed = window.confirm('Jeste li sigurni da želite izbrisati ovog vozača?');
+    
+    if (!isConfirmed) return;
+  
+    try {
+      const res = await fetch('/api/vozaci', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id }),
       });
+  
+      if (res.status === 500) {
+        setErrors({ ...errors, submit: 'Ne možete izbrisati vozača koji je na ruti.' });
+        return;
+      }
+  
+      if (res.ok) {
+        setDrivers(drivers.filter(driver => driver.id !== id));
+        await logAction(`Vozac uklonjen: ${driverToRemove.ime_vozaca} ${driverToRemove.prezime_vozaca} (OIB: ${driverToRemove.oib_vozaca})`, adminId, { 
+          ime_vozaca: driverToRemove.ime_vozaca, 
+          prezime_vozaca: driverToRemove.prezime_vozaca, 
+          oib_vozaca: driverToRemove.oib_vozaca 
+        });
+      }
+    } catch (error) {
+      console.error('Error removing driver:', error);
+      setErrors({ ...errors, submit: 'Došlo je do greške prilikom uklanjanja vozača.' });
     }
   };
 

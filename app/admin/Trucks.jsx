@@ -69,19 +69,34 @@ const Trucks = ({ trucks, setTrucks, adminId }) => {
   const handleRemoveTruck = async (id) => {
     const truckToRemove = trucks.find(truck => truck.id === id);
     if (!truckToRemove) return;
-
-    const res = await fetch('/api/kamioni', {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ id }),
-    });
-    if (res.ok) {
-      setTrucks(trucks.filter(truck => truck.id !== id));
-      await logAction(`Kamion uklonjen: ${truckToRemove.registracija}`, adminId, { registracija: truckToRemove.registracija });
+  
+    const isConfirmed = window.confirm('Jeste li sigurni da želite izbrisati ovaj kamion?');
+    
+    if (!isConfirmed) return;
+  
+    try {
+      const res = await fetch('/api/kamioni', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id }),
+      });
+  
+      if (res.status === 500) {
+        setErrors({ ...errors, submit: 'Ne možete izbrisati kamion koji je na ruti.' });
+        return;
+      }
+  
+      if (res.ok) {
+        setTrucks(trucks.filter(truck => truck.id !== id));
+        await logAction(`Kamion uklonjen: ${truckToRemove.registracija}`, adminId, { registracija: truckToRemove.registracija });
+      }
+    } catch (error) {
+      console.error('Error removing truck:', error);
+      setErrors({ ...errors, submit: 'Došlo je do greške prilikom uklanjanja kamiona.' });
     }
-  };
+  };  
 
   return (
     <div className="mt-8 text-center">
@@ -115,6 +130,7 @@ const Trucks = ({ trucks, setTrucks, adminId }) => {
           </button>
         </div>
       )}
+      {errors.submit && <p className="text-red-500 mt-4">{errors.submit}</p>}
       {showTruckInput && (
         <ul className="mt-4">
           {trucks.map(truck => (

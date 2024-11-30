@@ -61,6 +61,9 @@ const Stores = ({ stores, setStores, adminId }) => {
     const storeToRemove = stores.find(store => store.id === id);
     if (!storeToRemove) return;
 
+    const confirmed = window.confirm('Jeste li sigurni?');
+    if (!confirmed) return;
+
     const res = await fetch('/api/trgovine', {
       method: 'DELETE',
       headers: {

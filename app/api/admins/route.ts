@@ -75,3 +75,50 @@ export async function DELETE(request: NextRequest) {
     }
   }
 }
+
+export async function PUT(request: NextRequest) {
+  let connection;
+  try {
+    connection = await getConnection();
+    const { id, lozinka } = await request.json();
+
+    if (!id || !lozinka) {
+      return NextResponse.json(
+        { error: 'ID and new password are required' },
+        { status: 400 }
+      );
+    }
+
+    const [admins] = await connection.execute<Administrator[]>(
+      'SELECT * FROM Administratori WHERE id = ?',
+      [id]
+    );
+
+    if (!admins || admins.length === 0) {
+      return NextResponse.json(
+        { error: 'Administrator not found' },
+        { status: 404 }
+      );
+    }
+
+    const hashedLozinka = await bcrypt.hash(lozinka, 10);
+
+    await connection.execute(
+      'UPDATE Administratori SET lozinka = ? WHERE id = ?',
+      [hashedLozinka, id]
+    );
+
+    return NextResponse.json({ message: 'Password updated successfully' });
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Update password error:', errorMessage);
+    return NextResponse.json(
+      { error: 'Failed to update password', details: errorMessage },
+      { status: 500 }
+    );
+  } finally {
+    if (connection) {
+      await connection.end();
+    }
+  }
+}

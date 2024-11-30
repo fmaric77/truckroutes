@@ -55,6 +55,8 @@ const Skladista = ({ skladista = [], setSkladista, adminId }) => {
   };
 
   const handleRemoveSkladiste = async (id) => {
+    if (!window.confirm('Jeste li sigurni?')) return;
+
     const skladisteToRemove = skladista.find(skladiste => skladiste.id === id);
     if (!skladisteToRemove) return;
 
