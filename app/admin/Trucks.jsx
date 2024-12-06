@@ -51,23 +51,36 @@ const Trucks = ({ trucks, setTrucks, adminId }) => {
     if (!validateTruckInput()) return;
   
     const { registracija, datum_registracije } = truckInput;
-    const res = await fetch('/api/kamioni', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ registracija, datum_registracije }),
-    });
+    try {
+      const res = await fetch('/api/kamioni', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ registracija, datum_registracije }),
+      });
   
-    if (res.ok) {
-      // Fetch the updated truck data
-      const trucksRes = await fetch('/api/kamioni');
-      if (trucksRes.ok) {
-        const updatedTrucks = await trucksRes.json();
-        setTrucks(updatedTrucks);
-        setTruckInput({ registracija: '', datum_registracije: '' });
-        await logAction(`Kamion dodan: ${registracija}`, adminId, { registracija, datum_registracije });
+      if (res.ok) {
+        // Fetch the updated truck data
+        const trucksRes = await fetch('/api/kamioni');
+        if (trucksRes.ok) {
+          const updatedTrucks = await trucksRes.json();
+          setTrucks(updatedTrucks);
+          setTruckInput({ registracija: '', datum_registracije: '' });
+          await logAction(`Kamion dodan: ${registracija}`, adminId, { registracija, datum_registracije });
+          setErrors({});
+        }
+      } else {
+        const errorData = await res.json();
+        if (errorData.code === 'ER_DUP_ENTRY') {
+          setErrors({ submit: 'Taj kamion već postoji.' });
+        } else {
+          setErrors({ submit: 'Došlo je do greške prilikom dodavanja kamiona.' });
+        }
       }
+    } catch (error) {
+      console.error('Error adding truck:', error);
+      setErrors({ submit: 'Došlo je do greške prilikom dodavanja kamiona.' });
     }
   };
 
