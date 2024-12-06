@@ -11,11 +11,6 @@ interface AdminRow extends RowDataPacket {
   lozinka: string;
 }
 
-interface DriverRow extends RowDataPacket {
-  ime_vozaca: string;
-  lozinka_vozaca: string;
-}
-
 export async function POST(req: Request) {
   const { username, password } = await req.json();
 
@@ -35,22 +30,6 @@ export async function POST(req: Request) {
       if (isPasswordMatch) {
         await connection.end();
         return NextResponse.json({ message: 'Login successful', admin, role: 'admin' });
-      }
-    }
-
-    // Properly type driver query results 
-    const [driverRows]: [DriverRow[], FieldPacket[]] = await connection.execute<DriverRow[]>(
-      'SELECT * FROM Vozaci WHERE ime_vozaca = ?',
-      [username]
-    );
-
-    if (driverRows.length > 0) {
-      const driver = driverRows[0];
-      const isPasswordMatch = await bcrypt.compare(password, driver.lozinka_vozaca);
-
-      if (isPasswordMatch) {
-        await connection.end();
-        return NextResponse.json({ message: 'Login successful', driver, role: 'driver' });
       }
     }
 

@@ -49,7 +49,7 @@ const Trucks = ({ trucks, setTrucks, adminId }) => {
 
   const handleAddTruck = async () => {
     if (!validateTruckInput()) return;
-
+  
     const { registracija, datum_registracije } = truckInput;
     const res = await fetch('/api/kamioni', {
       method: 'POST',
@@ -58,11 +58,16 @@ const Trucks = ({ trucks, setTrucks, adminId }) => {
       },
       body: JSON.stringify({ registracija, datum_registracije }),
     });
+  
     if (res.ok) {
-      const newTruck = await res.json();
-      setTrucks([...trucks, newTruck]);
-      setTruckInput({ registracija: '', datum_registracije: '' });
-      await logAction(`Kamion dodan: ${registracija}`, adminId, { registracija, datum_registracije });
+      // Fetch the updated truck data
+      const trucksRes = await fetch('/api/kamioni');
+      if (trucksRes.ok) {
+        const updatedTrucks = await trucksRes.json();
+        setTrucks(updatedTrucks);
+        setTruckInput({ registracija: '', datum_registracije: '' });
+        await logAction(`Kamion dodan: ${registracija}`, adminId, { registracija, datum_registracije });
+      }
     }
   };
 

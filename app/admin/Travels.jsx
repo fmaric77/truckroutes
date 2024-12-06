@@ -60,7 +60,7 @@ const Travels = ({ putovanja, setPutovanja, drivers, trucks, spremneRute, adminI
 
   const handleAddPutovanje = async () => {
     if (!validatePutovanjeInput()) return;
-
+  
     const { datum, vozac_id, kamion_id, ruta_id } = putovanjeInput;
     const res = await fetch('/api/putovanja', {
       method: 'POST',
@@ -69,18 +69,26 @@ const Travels = ({ putovanja, setPutovanja, drivers, trucks, spremneRute, adminI
       },
       body: JSON.stringify({ datum, vozac_id, kamion_id, ruta_id }),
     });
+  
     if (res.ok) {
-      const newPutovanje = await res.json();
-      setPutovanja([...putovanja, newPutovanje]);
-      setPutovanjeInput({ datum: '', vozac_id: '', kamion_id: '', ruta_id: '' });
-      setShowPutovanjeInput(false);
-      await logAction(`Putovanje dodano: ${newPutovanje.id}`, adminId, {
-        id: newPutovanje.id,
-        datum,
-        vozac: getDriverName(vozac_id),
-        kamion: getTruckRegistration(kamion_id),
-        ruta: getRouteName(ruta_id),
-      });
+      // Fetch the updated putovanja data
+      const putovanjaRes = await fetch('/api/putovanja');
+      if (putovanjaRes.ok) {
+        const updatedPutovanja = await putovanjaRes.json();
+        setPutovanja(updatedPutovanja);
+        setPutovanjeInput({ datum: '', vozac_id: '', kamion_id: '', ruta_id: '' });
+        setShowPutovanjeInput(false);
+  
+        // Log the action with the new putovanje details
+        const newPutovanje = updatedPutovanja[updatedPutovanja.length - 1];
+        await logAction(`Putovanje dodano: ${newPutovanje.id}`, adminId, {
+          id: newPutovanje.id,
+          datum: newPutovanje.datum,
+          vozac: getDriverName(newPutovanje.vozac_id),
+          kamion: getTruckRegistration(newPutovanje.kamion_id),
+          ruta: getRouteName(newPutovanje.ruta_id),
+        });
+      }
     }
   };
 
