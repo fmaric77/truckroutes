@@ -78,6 +78,7 @@ const Travels = ({ putovanja, setPutovanja, drivers, trucks, spremneRute, adminI
         setPutovanja(updatedPutovanja);
         setPutovanjeInput({ datum: '', vozac_id: '', kamion_id: '', ruta_id: '' });
         setShowPutovanjeInput(false);
+        setShowPutovanja(false); // Add this line
   
         // Log the action with the new putovanje details
         const newPutovanje = updatedPutovanja[updatedPutovanja.length - 1];
@@ -91,7 +92,7 @@ const Travels = ({ putovanja, setPutovanja, drivers, trucks, spremneRute, adminI
       }
     }
   };
-
+  
   const handleRemovePutovanje = async (id) => {
     const putovanjeToRemove = putovanja.find(p => p.id === id);
     if (!putovanjeToRemove) return;
