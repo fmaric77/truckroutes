@@ -1,8 +1,7 @@
 // app/api/povijestputovanja/route.ts
 
 import { NextResponse } from 'next/server';
-import { getConnection } from '../../lib/db'; // Adjust the path as necessary
-
+import { getConnection } from '../../lib/db'; 
 export async function GET(req: Request) {
   const url = new URL(req.url);
   const params = url.searchParams;

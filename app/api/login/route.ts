@@ -5,7 +5,6 @@ import { getConnection } from '../../lib/db';
 import bcrypt from 'bcrypt';
 import { RowDataPacket, FieldPacket } from 'mysql2/promise';
 
-// Extend interfaces from RowDataPacket
 interface AdminRow extends RowDataPacket {
   ime: string;
   lozinka: string;
@@ -17,7 +16,7 @@ export async function POST(req: Request) {
   try {
     const connection = await getConnection();
 
-    // Properly type admin query results
+    
     const [adminRows]: [AdminRow[], FieldPacket[]] = await connection.execute<AdminRow[]>(
       'SELECT * FROM Administratori WHERE ime = ?',
       [username]

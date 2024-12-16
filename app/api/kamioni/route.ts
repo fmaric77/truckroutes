@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getConnection } from '../../lib/db';
 import { RowDataPacket, ResultSetHeader } from 'mysql2';
 
-// Define interface for Kamioni table
 interface Kamion extends RowDataPacket {
   id: number;
   registracija: string;

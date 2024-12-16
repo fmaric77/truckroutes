@@ -25,7 +25,7 @@ export async function GET() {
   try {
     const currentDate = new Date();
 
-    // Move past trips to PovijestPutovanja
+    // Prebaci putovanja na PovijestPutovanja
     await connection.execute(
       `
       INSERT INTO PovijestPutovanja (OIB, ime_vozaca, prezime_vozaca, registracija, ruta, datum)
@@ -39,13 +39,13 @@ export async function GET() {
       [currentDate]
     );
 
-    // Delete past trips from Putovanja
+    // Izbriši prošla putovanja
     await connection.execute(
       'DELETE FROM Putovanja WHERE datum < ?',
       [currentDate]
     );
 
-    // Fetch future trips
+    // Dohvati putovanja
     const [rows]: [PutovanjeRow[], FieldPacket[]] = await connection.execute<PutovanjeRow[]>(`
       SELECT 
         p.id, 
@@ -68,7 +68,6 @@ export async function GET() {
         AND p.datum >= ?
     `, [currentDate]);
 
-    // Format dates
     const formattedRows = rows.map((row) => ({
       ...row,
       datum: new Date(row.datum).toLocaleDateString('en-GB', {
