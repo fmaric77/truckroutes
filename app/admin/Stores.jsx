@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FaStore } from 'react-icons/fa'; // Assuming you have react-icons installed
+import { FaStore } from 'react-icons/fa'; 
 
 const logAction = async (action, adminId, storeInfo) => {
   console.log('Logging action:', action, 'Admin ID:', adminId, 'Store Info:', storeInfo);

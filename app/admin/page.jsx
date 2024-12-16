@@ -11,8 +11,7 @@ import Travels from './Travels';
 import Route from './Rute';
 import Skladista from './Skladista';
 import Link from 'next/link';
-import Admin from './Admin'; // Correct import for Admin component
-
+import Admin from './Admin'; 
 const AdminPanel = () => {
   const [admin, setAdmin] = useState(null);
   const [routes, setRoutes] = useState([]);
@@ -22,13 +21,13 @@ const AdminPanel = () => {
   const [stores, setStores] = useState([]);
   const [spremneRute, setSpremneRute] = useState([]);
   const [skladista, setSkladista] = useState([]);
-  const [admins, setAdmins] = useState([]); // Add state for admins
+  const [admins, setAdmins] = useState([]); 
   const router = useRouter();
 
   useEffect(() => {
     const storedAdmin = localStorage.getItem('admin');
     if (!storedAdmin) {
-      router.push('/'); // Redirect to login if no admin is stored
+      router.push('/'); // preusmjeri na početnu ako nema prijavljenog administratora
     } else {
       setAdmin(JSON.parse(storedAdmin));
     }
@@ -102,7 +101,7 @@ const fetchData = async () => {
                 </a>
               </Link>
             </li>
-            {/* Add other navigation links here */}
+            
           </ul>
         </nav>
         

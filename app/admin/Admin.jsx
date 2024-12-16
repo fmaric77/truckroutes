@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { FaUserShield } from 'react-icons/fa'; // Assuming you have react-icons installed
-
+import { FaUserShield } from 'react-icons/fa'; 
 const Admin = ({ admins = [], setAdmins, adminId }) => {
   const [showAdminInput, setShowAdminInput] = useState(false);
   const [adminInput, setAdminInput] = useState({ ime: '', lozinka: '' });

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FaTruck } from 'react-icons/fa'; // Assuming you have react-icons installed
+import { FaTruck } from 'react-icons/fa'; 
 
 const logAction = async (action, adminId, truckInfo) => {
   console.log('Logging action:', action, 'Admin ID:', adminId, 'Truck Info:', truckInfo);
@@ -61,7 +61,7 @@ const Trucks = ({ trucks, setTrucks, adminId }) => {
       });
   
       if (res.ok) {
-        // Fetch the updated truck data
+        // dohvati ažurirane podatke
         const trucksRes = await fetch('/api/kamioni');
         if (trucksRes.ok) {
           const updatedTrucks = await trucksRes.json();

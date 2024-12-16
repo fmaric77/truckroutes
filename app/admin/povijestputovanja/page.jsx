@@ -16,7 +16,7 @@ const PovijestPutovanja = () => {
 
   useEffect(() => {
     const fetchPutovanja = async () => {
-      // Build query parameters based on filters
+      // Napravi query string iz filtera
       const queryParams = new URLSearchParams();
 
       Object.keys(filters).forEach((key) => {
@@ -33,7 +33,6 @@ const PovijestPutovanja = () => {
     fetchPutovanja();
   }, [filters]);
 
-  // Function to format the date
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     const day = String(date.getDate()).padStart(2, '0');
@@ -42,7 +41,7 @@ const PovijestPutovanja = () => {
     return `${day}.${month}.${year}`;
   };
 
-  // Handle filter changes
+  
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
     setFilters((prev) => ({

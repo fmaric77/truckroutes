@@ -41,11 +41,10 @@ const LoginPage = () => {
       // Pohrani informacije o administratoru u lokalnu pohranu
       localStorage.setItem('admin', JSON.stringify(data.admin));
 
-      // Log the login action
       await logAction('Administrator se prijavio', data.admin.id);
 
       // Preusmjeri na administratorsku ploču
-      router.push('/admin'); // Prilagodite putanju do vaše administratorske ploče
+      router.push('/admin'); 
     } catch (error) {
       console.error('Greška pri prijavi:', error);
       setError((error as Error).message);

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FaUser } from 'react-icons/fa'; // Assuming you have react-icons installed
+import { FaUser } from 'react-icons/fa'; 
 
 const ErrorMessage = ({ message }) => (
   <div className="text-red-500 text-sm mt-1">{message}</div>

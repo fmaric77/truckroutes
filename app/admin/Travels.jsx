@@ -71,16 +71,16 @@ const Travels = ({ putovanja, setPutovanja, drivers, trucks, spremneRute, adminI
     });
   
     if (res.ok) {
-      // Fetch the updated putovanja data
+      // Dohvati ažurirane podatke
       const putovanjaRes = await fetch('/api/putovanja');
       if (putovanjaRes.ok) {
         const updatedPutovanja = await putovanjaRes.json();
         setPutovanja(updatedPutovanja);
         setPutovanjeInput({ datum: '', vozac_id: '', kamion_id: '', ruta_id: '' });
         setShowPutovanjeInput(false);
-        setShowPutovanja(false); // Add this line
+        setShowPutovanja(false); 
   
-        // Log the action with the new putovanje details
+        //Zabilježi akciju
         const newPutovanje = updatedPutovanja[updatedPutovanja.length - 1];
         await logAction(`Putovanje dodano: ${newPutovanje.id}`, adminId, {
           id: newPutovanje.id,
