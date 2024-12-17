@@ -1,8 +1,7 @@
 // app/api/logs/route.ts
 
 import { NextResponse } from 'next/server';
-import { getConnection } from '../../lib/db'; // Adjust the path as necessary
-
+import { getConnection } from '../../lib/db'; 
 export async function POST(req: Request) {
   const { action, adminId } = await req.json();
 
@@ -12,7 +11,7 @@ export async function POST(req: Request) {
 
   try {
     const connection = await getConnection();
-    const timestamp = new Date().toISOString().slice(0, 19).replace('T', ' '); // Format the timestamp correctly
+    const timestamp = new Date().toISOString().slice(0, 19).replace('T', ' '); 
     await connection.execute(
       'INSERT INTO Logs (admin_id, action, timestamp) VALUES (?, ?, ?)',
       [adminId, action, timestamp]
