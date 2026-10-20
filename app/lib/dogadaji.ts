@@ -81,7 +81,7 @@ export function eventsForTrips(events: StoredDogadaj[], trips: TripKey[]) {
     list.push(trip);
     tripsByDay.set(key, list);
   }
-  for (const list of tripsByDay.values()) list.sort((a, b) => a.id - b.id);
+  Array.from(tripsByDay.values()).forEach((list) => list.sort((a, b) => a.id - b.id));
 
   for (const event of events) {
     if (event.putovanje_id != null && grouped.has(event.putovanje_id)) {

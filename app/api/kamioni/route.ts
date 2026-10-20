@@ -76,10 +76,10 @@ export async function GET() {
       tripsByTruck.set(trip.kamion_id, list);
     }
     const nextByTruck = new Map<number, { id: number; kamion_id: number; dan: string; vozac: string; datum_prikaz: string }>();
-    for (const [kamionId, list] of tripsByTruck) {
+    tripsByTruck.forEach((list, kamionId) => {
       const openTrips = list.filter((trip) => openStatuses.has(trip.zadnji));
       const trip = openTrips.length ? openTrips[openTrips.length - 1] : list.find((item) => item.dan >= today);
-      if (!trip) continue;
+      if (!trip) return;
       nextByTruck.set(kamionId, {
         id: trip.id,
         kamion_id: trip.kamion_id,
@@ -87,8 +87,8 @@ export async function GET() {
         vozac: String(trip.vozac),
         datum_prikaz: String(trip.datum_prikaz),
       });
-    }
-    const grouped = eventsForTrips(events, [...nextByTruck.values()]);
+    });
+    const grouped = eventsForTrips(events, Array.from(nextByTruck.values()));
 
     const formattedRows = rows.map(row => {
       const trip = nextByTruck.get(row.id);
