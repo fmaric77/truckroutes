@@ -162,6 +162,8 @@ const Trucks = ({ trucks, setTrucks, adminId }) => {
                 {' · '}
                 {truck.vozac ? `Vozač: ${truck.vozac}${truck.vozac_datum ? ` · ${truck.vozac_datum}` : ''}` : 'Nema dodijeljenog vozača'}
               </span>
+              {truck.trajanje && <span className="mt-1 block text-xs text-slate-300">{truck.trajanje}</span>}
+              {truck.tijek && <span className="mt-0.5 block text-xs text-slate-500">{truck.tijek}</span>}
             </span>
             <button type="button" onClick={() => handleRemoveTruck(truck.id)} className="ui-btn ui-btn-danger shrink-0 px-3 py-1 text-xs">Ukloni</button>
           </li>

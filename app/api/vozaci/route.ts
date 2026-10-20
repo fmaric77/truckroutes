@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getConnection } from '../../lib/db';
+import { openTripSql } from '../../lib/openTrip';
 import bcrypt from 'bcrypt';
 import { RowDataPacket, ResultSetHeader } from 'mysql2';
 
@@ -22,15 +23,25 @@ export async function GET() {
           SELECT k.registracija
           FROM Putovanja p
           JOIN Kamioni k ON k.id = p.kamion_id
-          WHERE p.vozac_id = v.id AND p.datum >= CURDATE()
-          ORDER BY p.datum ASC
+          WHERE p.vozac_id = v.id
+            AND (p.datum >= CURDATE() OR ${openTripSql})
+          ORDER BY
+            (${openTripSql}) DESC,
+            IF(${openTripSql}, p.datum, '9999-12-31') DESC,
+            p.datum ASC,
+            p.id ASC
           LIMIT 1
         ) AS kamion,
         (
           SELECT DATE_FORMAT(p.datum, '%d.%m.%Y')
           FROM Putovanja p
-          WHERE p.vozac_id = v.id AND p.datum >= CURDATE()
-          ORDER BY p.datum ASC
+          WHERE p.vozac_id = v.id
+            AND (p.datum >= CURDATE() OR ${openTripSql})
+          ORDER BY
+            (${openTripSql}) DESC,
+            IF(${openTripSql}, p.datum, '9999-12-31') DESC,
+            p.datum ASC,
+            p.id ASC
           LIMIT 1
         ) AS kamion_datum
       FROM Vozaci v

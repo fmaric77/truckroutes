@@ -120,6 +120,7 @@ const PovijestPutovanja = () => {
                 <th className="px-4 py-3 font-medium">Registracija</th>
                 <th className="px-4 py-3 font-medium">Ruta</th>
                 <th className="px-4 py-3 font-medium">Datum</th>
+                <th className="px-4 py-3 font-medium">Trajanje</th>
               </tr>
             </thead>
             <tbody>
@@ -132,6 +133,10 @@ const PovijestPutovanja = () => {
                   <td className="px-4 py-3">{putovanje.ruta}</td>
                   <td className="px-4 py-3 text-slate-300">
                     {formatDate(putovanje.datum)}
+                  </td>
+                  <td className="px-4 py-3 text-slate-300">
+                    {putovanje.trajanje}
+                    {putovanje.tijek && <span className="mt-0.5 block text-xs text-slate-500">{putovanje.tijek}</span>}
                   </td>
                 </tr>
               ))}

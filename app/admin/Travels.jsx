@@ -220,6 +220,8 @@ const Travels = ({ putovanja, setPutovanja, drivers, trucks, spremneRute, adminI
               <span>
                 {p.datum} · {p.vozac_ime} {p.vozac_prezime}
                 <span className="mt-0.5 block text-xs text-slate-400">{p.registracija} · {p.ruta}</span>
+                {p.trajanje && <span className="mt-1 block text-xs text-slate-300">{p.trajanje}</span>}
+                {p.tijek && <span className="mt-0.5 block text-xs text-slate-500">{p.tijek}</span>}
               </span>
               <button type="button" onClick={() => handleRemovePutovanje(p.id)} className="ui-btn ui-btn-danger shrink-0 px-3 py-1 text-xs">Ukloni</button>
             </li>

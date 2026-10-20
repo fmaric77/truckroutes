@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getConnection } from '../../lib/db';
 import { RowDataPacket, ResultSetHeader, FieldPacket } from 'mysql2/promise';
+import { eventsForTrips, eventsThroughClose, loadDogadaji, summaryFor } from '../../lib/dogadaji';
+import { openTripSql } from '../../lib/openTrip';
 
 interface PutovanjeRow extends RowDataPacket {
   id: number;
+  kamion_id: number;
+  dan: string;
   datum: Date;
   vozac_ime: string;
   vozac_prezime: string;
@@ -23,9 +27,8 @@ interface PutovanjeInput {
 export async function GET() {
   const connection = await getConnection();
   try {
-    const currentDate = new Date();
+    const finishedBeforeToday = `p.datum < CURDATE() AND NOT (${openTripSql})`;
 
-    // Prebaci putovanja na PovijestPutovanja
     await connection.execute(
       `
       INSERT INTO PovijestPutovanja (OIB, ime_vozaca, prezime_vozaca, registracija, ruta, datum)
@@ -34,21 +37,20 @@ export async function GET() {
       JOIN Vozaci v ON p.vozac_id = v.id
       JOIN Kamioni k ON p.kamion_id = k.id
       JOIN SpremneRute sr ON p.ruta_id = sr.id
-      WHERE p.datum < ?
-      `,
-      [currentDate]
+      WHERE ${finishedBeforeToday}
+      `
     );
 
-    // Izbriši prošla putovanja
     await connection.execute(
-      'DELETE FROM Putovanja WHERE datum < ?',
-      [currentDate]
+      `DELETE p FROM Putovanja p WHERE ${finishedBeforeToday}`
     );
 
     // Dohvati putovanja
     const [rows]: [PutovanjeRow[], FieldPacket[]] = await connection.execute<PutovanjeRow[]>(`
       SELECT 
-        p.id, 
+        p.id,
+        p.kamion_id,
+        DATE_FORMAT(p.datum, '%Y-%m-%d') AS dan,
         p.datum, 
         v.ime_vozaca AS vozac_ime, 
         v.prezime_vozaca AS vozac_prezime, 
@@ -65,22 +67,40 @@ export async function GET() {
         SpremneRute sr ON p.ruta_id = sr.id
       WHERE 
         v.status != 'neaktivan'
-        AND p.datum >= ?
-    `, [currentDate]);
+        AND (p.datum >= CURDATE() OR ${openTripSql})
+    `);
 
-    const formattedRows = rows.map((row) => ({
-      ...row,
-      datum: new Date(row.datum).toLocaleDateString('en-GB', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric'
-      }).replace(/\//g, '.')
-    }));
+    const { events, now } = await loadDogadaji(connection);
+    const grouped = eventsForTrips(events, rows.map((row) => ({
+      id: row.id,
+      kamion_id: row.kamion_id,
+      dan: row.dan,
+    })));
+
+    const formattedRows = rows.map((row) => {
+      const summary = summaryFor(
+        eventsThroughClose(grouped.get(row.id) ?? []),
+        now,
+        events.filter((event) => event.kamion_id === row.kamion_id)
+      );
+      return {
+        ...row,
+        datum: new Date(row.datum).toLocaleDateString('en-GB', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric'
+        }).replace(/\//g, '.'),
+        trajanje: summary.trajanje,
+        tijek: summary.tijek,
+      };
+    });
 
     return NextResponse.json(formattedRows);
   } catch (error) {
     console.error('Failed to fetch putovanja:', error);
     return NextResponse.json({ error: 'Failed to fetch putovanja' }, { status: 500 });
+  } finally {
+    await connection.end();
   }
 }
 
