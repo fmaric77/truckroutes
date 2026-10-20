@@ -6,14 +6,48 @@ interface Kamion extends RowDataPacket {
   id: number;
   registracija: string;
   datum_registracije: Date;
+  status: string;
+  skladiste: string | null;
+  vozac: string | null;
+  vozac_datum: string | null;
+  rampa: string | null;
 }
 
 export async function GET() {
   const connection = await getConnection();
   try {
-    const [rows] = await connection.execute<Kamion[]>('SELECT * FROM Kamioni');
+    const [rows] = await connection.execute<Kamion[]>(`
+      SELECT
+        k.id,
+        k.registracija,
+        k.datum_registracije,
+        k.status,
+        GROUP_CONCAT(DISTINCT s.naziv_skladista ORDER BY s.naziv_skladista SEPARATOR ', ') AS skladiste,
+        GROUP_CONCAT(DISTINCT ks.rampa ORDER BY ks.rampa SEPARATOR ', ') AS rampa,
+        (
+          SELECT CONCAT(v.ime_vozaca, ' ', v.prezime_vozaca)
+          FROM Putovanja p
+          JOIN Vozaci v ON v.id = p.vozac_id
+          WHERE p.kamion_id = k.id AND p.datum >= CURDATE()
+          ORDER BY p.datum ASC
+          LIMIT 1
+        ) AS vozac,
+        (
+          SELECT DATE_FORMAT(p.datum, '%d.%m.%Y')
+          FROM Putovanja p
+          WHERE p.kamion_id = k.id AND p.datum >= CURDATE()
+          ORDER BY p.datum ASC
+          LIMIT 1
+        ) AS vozac_datum
+      FROM Kamioni k
+      LEFT JOIN KamioniNaSkladistu ks ON ks.kamion_id = k.id
+      LEFT JOIN Skladista s ON s.id = ks.skladiste_id
+      GROUP BY k.id, k.registracija, k.datum_registracije, k.status
+    `);
     const formattedRows = rows.map(row => ({
       ...row,
+      skladiste: row.skladiste || null,
+      rampa: row.rampa || null,
       datum_registracije: new Date(row.datum_registracije).toLocaleDateString('en-GB', {
         day: '2-digit',
         month: '2-digit',
@@ -24,6 +58,8 @@ export async function GET() {
   } catch (error: unknown) {
     console.error('Error fetching kamioni:', error);
     return NextResponse.json({ error: 'Failed to fetch kamioni' }, { status: 500 });
+  } finally {
+    await connection.end();
   }
 }
 

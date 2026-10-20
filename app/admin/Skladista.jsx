@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FaWarehouse } from 'react-icons/fa'; 
+import FormModal from './FormModal'; 
 
 const logAction = async (action, adminId, skladisteInfo) => {
   console.log('Logging action:', action, 'Admin ID:', adminId, 'Skladiste Info:', skladisteInfo);
@@ -17,7 +17,7 @@ const logAction = async (action, adminId, skladisteInfo) => {
 };
 
 const Skladista = ({ skladista = [], setSkladista, adminId }) => {
-  const [showSkladisteInput, setShowSkladisteInput] = useState(false);
+  const [open, setOpen] = useState(false);
   const [skladisteInput, setSkladisteInput] = useState({ naziv_skladista: '', lozinka_skladista: '' });
   const [errors, setErrors] = useState({});
 
@@ -47,9 +47,9 @@ const Skladista = ({ skladista = [], setSkladista, adminId }) => {
     if (res.ok) {
       const newSkladiste = await res.json();
       setSkladista([...skladista, newSkladiste]);
-      setShowSkladisteInput(false);
       setSkladisteInput({ naziv_skladista: '', lozinka_skladista: '' });
       setErrors({});
+      setOpen(false);
       await logAction(`Skladiste dodano: ${naziv_skladista}`, adminId, { naziv_skladista });
     }
   };
@@ -74,47 +74,46 @@ const Skladista = ({ skladista = [], setSkladista, adminId }) => {
   };
 
   return (
-    <div className="mt-8 text-center">
-      <h2 className="text-xl font-bold">Skladišta</h2>
-      <FaWarehouse 
-        onClick={() => setShowSkladisteInput(!showSkladisteInput)} 
-        className="text-6xl cursor-pointer mx-auto my-4" 
-      />
-      {showSkladisteInput && (
-        <div className="mt-4 flex flex-col items-center">
-          <input
-            type="text"
-            placeholder="Naziv"
-            value={skladisteInput.naziv_skladista}
-            onChange={(e) => setSkladisteInput({ ...skladisteInput, naziv_skladista: e.target.value })}
-            className="border p-2 mb-2 w-full max-w-md"
-            style={{ backgroundColor: 'black', color: 'white' }}
-          />
-          {errors.naziv_skladista && <span className="text-red-500 text-sm mt-1">{errors.naziv_skladista}</span>}
-          <input
-            type="password"
-            placeholder="Lozinka"
-            value={skladisteInput.lozinka_skladista}
-            onChange={(e) => setSkladisteInput({ ...skladisteInput, lozinka_skladista: e.target.value })}
-            className="border p-2 mb-2 w-full max-w-md"
-            style={{ backgroundColor: 'black', color: 'white' }}
-          />
-          {errors.lozinka_skladista && <span className="text-red-500 text-sm mt-1">{errors.lozinka_skladista}</span>}
-          <button onClick={handleAddSkladiste} className="text-green-500 ml-2">
-            Dodaj
-          </button>
+    <div>
+      <div className="mb-4 flex justify-end">
+        <button type="button" onClick={() => setOpen(true)} className="ui-btn ui-btn-primary">Dodaj skladište</button>
+      </div>
+      <FormModal open={open} title="Novo skladište" onClose={() => setOpen(false)}>
+        <div className="space-y-3">
+          <div>
+            <label className="ui-label" htmlFor="skladiste-naziv">Naziv</label>
+            <input
+              id="skladiste-naziv"
+              type="text"
+              value={skladisteInput.naziv_skladista}
+              onChange={(e) => setSkladisteInput({ ...skladisteInput, naziv_skladista: e.target.value })}
+              className="ui-input"
+            />
+            {errors.naziv_skladista && <span className="mt-1 block text-sm text-rose-300">{errors.naziv_skladista}</span>}
+          </div>
+          <div>
+            <label className="ui-label" htmlFor="skladiste-lozinka">Lozinka</label>
+            <input
+              id="skladiste-lozinka"
+              type="password"
+              value={skladisteInput.lozinka_skladista}
+              onChange={(e) => setSkladisteInput({ ...skladisteInput, lozinka_skladista: e.target.value })}
+              className="ui-input"
+            />
+            {errors.lozinka_skladista && <span className="mt-1 block text-sm text-rose-300">{errors.lozinka_skladista}</span>}
+          </div>
+          <button type="button" onClick={handleAddSkladiste} className="ui-btn ui-btn-primary w-full">Spremi</button>
         </div>
-      )}
-      {showSkladisteInput && (
-        <ul className="mt-4">
+      </FormModal>
+      <ul className="space-y-2">
+          {skladista.length === 0 && <li className="text-sm text-slate-400">Nema skladišta.</li>}
           {skladista.map(skladiste => (
-            <li key={skladiste.id} className="flex justify-between items-center border-b py-2">
-              {skladiste.naziv_skladista}
-              <button onClick={() => handleRemoveSkladiste(skladiste.id)} className="text-red-500 ml-2">Ukloni</button>
+            <li key={skladiste.id} className="ui-row text-sm">
+              <span>{skladiste.naziv_skladista}</span>
+              <button type="button" onClick={() => handleRemoveSkladiste(skladiste.id)} className="ui-btn ui-btn-danger shrink-0 px-3 py-1 text-xs">Ukloni</button>
             </li>
           ))}
-        </ul>
-      )}
+      </ul>
     </div>
   );
 };

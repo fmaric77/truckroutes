@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FaStore } from 'react-icons/fa'; 
+import FormModal from './FormModal'; 
 
 const logAction = async (action, adminId, storeInfo) => {
   console.log('Logging action:', action, 'Admin ID:', adminId, 'Store Info:', storeInfo);
@@ -17,8 +17,9 @@ const logAction = async (action, adminId, storeInfo) => {
 };
 
 const Stores = ({ stores, setStores, adminId }) => {
-  const [showStoreInput, setShowStoreInput] = useState(false);
+  const [open, setOpen] = useState(false);
   const [storeInput, setStoreInput] = useState({ ime_trgovine: '', adresa: '' });
+  const [query, setQuery] = useState('');
   const [errors, setErrors] = useState({});
 
   const validateStoreInput = () => {
@@ -47,9 +48,9 @@ const Stores = ({ stores, setStores, adminId }) => {
     if (res.ok) {
       const newStore = await res.json();
       setStores([...stores, newStore]);
-      setShowStoreInput(false);
       setStoreInput({ ime_trgovine: '', adresa: '' });
       setErrors({});
+      setOpen(false);
       await logAction(`Trgovina dodana: ${ime_trgovine}, ${adresa}`, adminId, {
         ime_trgovine,
         adresa,
@@ -80,52 +81,63 @@ const Stores = ({ stores, setStores, adminId }) => {
     }
   };
 
+  const q = query.trim().toLowerCase();
+  const visibleStores = stores.filter((store) => {
+    if (!q) return true;
+    return `${store.ime_trgovine} ${store.adresa}`.toLowerCase().includes(q);
+  });
+
   return (
-    <div className="mt-8 text-center">
-      <h2 className="text-xl font-bold">Trgovine</h2>
-      <FaStore 
-        onClick={() => setShowStoreInput(!showStoreInput)} 
-        className="text-6xl cursor-pointer mx-auto my-4" 
-      />
-      {showStoreInput && (
-        <div className="mt-4 flex flex-col items-center">
-          <input
-            type="text"
-            placeholder="Ime trgovine"
-            value={storeInput.ime_trgovine}
-            onChange={(e) => setStoreInput({ ...storeInput, ime_trgovine: e.target.value })}
-            className="border p-2 mb-2 w-full max-w-md"
-            style={{ backgroundColor: 'black', color: 'white' }}
-          />
-          {errors.ime_trgovine && (
-            <div className="text-red-500 text-sm mt-1">{errors.ime_trgovine}</div>
-          )}
-          <input
-            type="text"
-            placeholder="Adresa"
-            value={storeInput.adresa}
-            onChange={(e) => setStoreInput({ ...storeInput, adresa: e.target.value })}
-            className="border p-2 mb-2 w-full max-w-md"
-            style={{ backgroundColor: 'black', color: 'white' }}
-          />
-          {errors.adresa && (
-            <div className="text-red-500 text-sm mt-1">{errors.adresa}</div>
-          )}
-          <button onClick={handleAddStore} className="text-green-500 ml-2">
-            Dodaj
-          </button>
+    <div>
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <input
+          type="search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Traži trgovinu ili adresu"
+          aria-label="Traži trgovinu"
+          className="ui-input max-w-md"
+        />
+        <button type="button" onClick={() => setOpen(true)} className="ui-btn ui-btn-primary">Dodaj trgovinu</button>
+      </div>
+      <FormModal open={open} title="Nova trgovina" onClose={() => setOpen(false)}>
+        <div className="space-y-3">
+          <div>
+            <label className="ui-label" htmlFor="trgovina-ime">Ime trgovine</label>
+            <input
+              id="trgovina-ime"
+              type="text"
+              value={storeInput.ime_trgovine}
+              onChange={(e) => setStoreInput({ ...storeInput, ime_trgovine: e.target.value })}
+              className="ui-input"
+            />
+            {errors.ime_trgovine && <div className="mt-1 text-sm text-rose-300">{errors.ime_trgovine}</div>}
+          </div>
+          <div>
+            <label className="ui-label" htmlFor="trgovina-adresa">Adresa</label>
+            <input
+              id="trgovina-adresa"
+              type="text"
+              value={storeInput.adresa}
+              onChange={(e) => setStoreInput({ ...storeInput, adresa: e.target.value })}
+              className="ui-input"
+            />
+            {errors.adresa && <div className="mt-1 text-sm text-rose-300">{errors.adresa}</div>}
+          </div>
+          <button type="button" onClick={handleAddStore} className="ui-btn ui-btn-primary w-full">Spremi</button>
         </div>
-      )}
-      {showStoreInput && (
-        <ul className="mt-4">
-          {stores.map(store => (
-            <li key={store.id} className="flex justify-between items-center border-b py-2">
-              {store.ime_trgovine} - {store.adresa}
-              <button onClick={() => handleRemoveStore(store.id)} className="text-red-500 ml-2">Ukloni</button>
+      </FormModal>
+      <div>
+        <ul className="space-y-2">
+          {visibleStores.length === 0 && <li className="text-sm text-slate-400">Nema trgovina.</li>}
+          {visibleStores.map(store => (
+            <li key={store.id} className="ui-row text-sm">
+              <span>{store.ime_trgovine}<span className="mt-0.5 block text-xs text-slate-400">{store.adresa}</span></span>
+              <button type="button" onClick={() => handleRemoveStore(store.id)} className="ui-btn ui-btn-danger shrink-0 px-3 py-1 text-xs">Ukloni</button>
             </li>
           ))}
         </ul>
-      )}
+      </div>
     </div>
   );
 };

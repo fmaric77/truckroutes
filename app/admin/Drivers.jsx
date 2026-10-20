@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FaUser } from 'react-icons/fa'; 
+import FormModal from './FormModal'; 
 
 const ErrorMessage = ({ message }) => (
   <div className="text-red-500 text-sm mt-1">{message}</div>
@@ -21,7 +21,7 @@ const logAction = async (action, adminId, driverInfo) => {
 };
 
 const Drivers = ({ drivers = [], setDrivers, adminId }) => {
-  const [showDriverInput, setShowDriverInput] = useState(false);
+  const [open, setOpen] = useState(false);
   const [driverInput, setDriverInput] = useState({ 
     ime_vozaca: '', 
     prezime_vozaca: '', 
@@ -77,9 +77,9 @@ const Drivers = ({ drivers = [], setDrivers, adminId }) => {
       if (res.ok) {
         const newDriver = await res.json();
         setDrivers([...drivers, newDriver]);
-        setShowDriverInput(false);
         setDriverInput({ ime_vozaca: '', prezime_vozaca: '', oib_vozaca: '', lozinka_vozaca: '' });
         setErrors({});
+        setOpen(false);
         await logAction(`Vozac dodan: ${ime_vozaca} ${prezime_vozaca} (OIB: ${oib_vozaca})`, adminId, { ime_vozaca, prezime_vozaca, oib_vozaca });
       }
     } catch (error) {
@@ -144,74 +144,86 @@ const Drivers = ({ drivers = [], setDrivers, adminId }) => {
   };
 
   return (
-    <div className="mt-8 text-center">
-      <h2 className="text-xl font-bold">Vozači</h2>
-      <FaUser 
-        onClick={() => setShowDriverInput(!showDriverInput)} 
-        className="text-6xl cursor-pointer mx-auto my-4" 
-      />
-      {showDriverInput && (
-        <div className="mt-4 flex flex-col items-center">
-          <input
-            type="text"
-            placeholder="Ime"
-            value={driverInput.ime_vozaca}
-            onChange={(e) => setDriverInput({ ...driverInput, ime_vozaca: e.target.value })}
-            className="border p-2 mb-2 w-full max-w-md"
-            style={{ backgroundColor: 'black', color: 'white' }}
-          />
-          {errors.ime_vozaca && <ErrorMessage message={errors.ime_vozaca} />}
-          <input
-            type="text"
-            placeholder="Prezime"
-            value={driverInput.prezime_vozaca}
-            onChange={(e) => setDriverInput({ ...driverInput, prezime_vozaca: e.target.value })}
-            className="border p-2 mb-2 w-full max-w-md"
-            style={{ backgroundColor: 'black', color: 'white' }}
-          />
-          {errors.prezime_vozaca && <ErrorMessage message={errors.prezime_vozaca} />}
-          <input
-            type="text"
-            placeholder="OIB"
-            value={driverInput.oib_vozaca}
-            onChange={(e) => setDriverInput({ ...driverInput, oib_vozaca: e.target.value })}
-            className="border p-2 mb-2 w-full max-w-md"
-            style={{ backgroundColor: 'black', color: 'white' }}
-          />
-          {errors.oib_vozaca && <ErrorMessage message={errors.oib_vozaca} />}
-          <input
-            type="password"
-            placeholder="Lozinka"
-            value={driverInput.lozinka_vozaca}
-            onChange={(e) => setDriverInput({ ...driverInput, lozinka_vozaca: e.target.value })}
-            className="border p-2 mb-2 w-full max-w-md"
-            style={{ backgroundColor: 'black', color: 'white' }}
-          />
-          {errors.lozinka_vozaca && <ErrorMessage message={errors.lozinka_vozaca} />}
+    <div>
+      <div className="mb-4 flex justify-end">
+        <button type="button" onClick={() => setOpen(true)} className="ui-btn ui-btn-primary">Dodaj vozača</button>
+      </div>
+      <FormModal open={open} title="Novi vozač" onClose={() => setOpen(false)}>
+        <div className="space-y-3">
+          <div>
+            <label className="ui-label" htmlFor="vozac-ime">Ime</label>
+            <input
+              id="vozac-ime"
+              type="text"
+              value={driverInput.ime_vozaca}
+              onChange={(e) => setDriverInput({ ...driverInput, ime_vozaca: e.target.value })}
+              className="ui-input"
+            />
+            {errors.ime_vozaca && <ErrorMessage message={errors.ime_vozaca} />}
+          </div>
+          <div>
+            <label className="ui-label" htmlFor="vozac-prezime">Prezime</label>
+            <input
+              id="vozac-prezime"
+              type="text"
+              value={driverInput.prezime_vozaca}
+              onChange={(e) => setDriverInput({ ...driverInput, prezime_vozaca: e.target.value })}
+              className="ui-input"
+            />
+            {errors.prezime_vozaca && <ErrorMessage message={errors.prezime_vozaca} />}
+          </div>
+          <div>
+            <label className="ui-label" htmlFor="vozac-oib">OIB</label>
+            <input
+              id="vozac-oib"
+              type="text"
+              value={driverInput.oib_vozaca}
+              onChange={(e) => setDriverInput({ ...driverInput, oib_vozaca: e.target.value })}
+              className="ui-input"
+            />
+            {errors.oib_vozaca && <ErrorMessage message={errors.oib_vozaca} />}
+          </div>
+          <div>
+            <label className="ui-label" htmlFor="vozac-lozinka">Lozinka</label>
+            <input
+              id="vozac-lozinka"
+              type="password"
+              value={driverInput.lozinka_vozaca}
+              onChange={(e) => setDriverInput({ ...driverInput, lozinka_vozaca: e.target.value })}
+              className="ui-input"
+            />
+            {errors.lozinka_vozaca && <ErrorMessage message={errors.lozinka_vozaca} />}
+          </div>
           {errors.submit && <ErrorMessage message={errors.submit} />}
-          <button onClick={handleAddDriver} className="text-green-500 ml-2">
-            Dodaj
-          </button>
+          <button type="button" onClick={handleAddDriver} className="ui-btn ui-btn-primary w-full">Spremi</button>
         </div>
-      )}
-      {showDriverInput && (
-        <ul className="mt-4">
+      </FormModal>
+      <ul className="space-y-2">
+          {drivers.length === 0 && <li className="text-sm text-slate-400">Nema vozača.</li>}
           {drivers.map(driver => (
-      <li key={driver.id} className="flex justify-between items-center border-b py-2">
-      {driver.ime_vozaca} {driver.prezime_vozaca} (OIB: {driver.oib_vozaca}) - Status: 
-      <span 
-        onClick={() => handleToggleStatus(driver.id, driver.status)} 
-        className="cursor-pointer text-blue-500"
-      >
-        {driver.status}
-      </span>
-      <button onClick={() => handleRemoveDriver(driver.id)} className="text-red-500 ml-2">
-        Ukloni
-      </button>
-    </li>
+            <li key={driver.id} className="ui-row flex-col sm:flex-row sm:items-center">
+              <span className="text-sm">
+                {driver.ime_vozaca} {driver.prezime_vozaca}
+                <span className="mt-0.5 block text-xs text-slate-400">OIB {driver.oib_vozaca}</span>
+                <span className="mt-0.5 block text-xs text-slate-400">
+                  {driver.kamion ? `Kamion: ${driver.kamion}${driver.kamion_datum ? ` · ${driver.kamion_datum}` : ''}` : 'Nema dodijeljenog kamiona'}
+                </span>
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleToggleStatus(driver.id, driver.status)}
+                  className="ui-btn px-3 py-1 text-xs"
+                >
+                  {driver.status}
+                </button>
+                <button type="button" onClick={() => handleRemoveDriver(driver.id)} className="ui-btn ui-btn-danger px-3 py-1 text-xs">
+                  Ukloni
+                </button>
+              </div>
+            </li>
           ))}
-        </ul>
-      )}
+      </ul>
     </div>
   );
 };

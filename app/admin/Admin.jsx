@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { FaUserShield } from 'react-icons/fa'; 
+import FormModal from './FormModal'; 
 const Admin = ({ admins = [], setAdmins, adminId }) => {
-  const [showAdminInput, setShowAdminInput] = useState(false);
+  const [open, setOpen] = useState(false);
   const [adminInput, setAdminInput] = useState({ ime: '', lozinka: '' });
 
   const validateAdminInput = () => {
@@ -48,8 +48,8 @@ const Admin = ({ admins = [], setAdmins, adminId }) => {
     if (res.ok) {
       const newAdmin = await res.json();
       setAdmins([...admins, newAdmin]);
-      setShowAdminInput(false);
       setAdminInput({ ime: '', lozinka: '' });
+      setOpen(false);
       await logAction('Administrator dodan', adminId, { ime });
     }
   };
@@ -102,48 +102,46 @@ const Admin = ({ admins = [], setAdmins, adminId }) => {
   };
 
   return (
-    <div className="mt-8 text-center">
-      <h2 className="text-xl font-bold">Administratori</h2>
-      <FaUserShield 
-        onClick={() => setShowAdminInput(!showAdminInput)} 
-        className="text-6xl cursor-pointer mx-auto my-4" 
-      />
-      {showAdminInput && (
-        <div className="mt-4 flex flex-col items-center">
-          <input
-            type="text"
-            placeholder="Ime"
-            value={adminInput.ime}
-            onChange={(e) => setAdminInput({ ...adminInput, ime: e.target.value })}
-            className="border p-2 mb-2 w-full max-w-md"
-            style={{ backgroundColor: 'black', color: 'white' }}
-          />
-          <input
-            type="password"
-            placeholder="Lozinka"
-            value={adminInput.lozinka}
-            onChange={(e) => setAdminInput({ ...adminInput, lozinka: e.target.value })}
-            className="border p-2 mb-2 w-full max-w-md"
-            style={{ backgroundColor: 'black', color: 'white' }}
-          />
-          <button onClick={handleAddAdmin} className="text-green-500 ml-2">
-            Dodaj
-          </button>
+    <div>
+      <div className="mb-4 flex justify-end">
+        <button type="button" onClick={() => setOpen(true)} className="ui-btn ui-btn-primary">Dodaj administratora</button>
+      </div>
+      <FormModal open={open} title="Novi administrator" onClose={() => setOpen(false)}>
+        <div className="space-y-3">
+          <div>
+            <label className="ui-label" htmlFor="admin-ime">Ime</label>
+            <input
+              id="admin-ime"
+              type="text"
+              value={adminInput.ime}
+              onChange={(e) => setAdminInput({ ...adminInput, ime: e.target.value })}
+              className="ui-input"
+            />
+          </div>
+          <div>
+            <label className="ui-label" htmlFor="admin-lozinka">Lozinka</label>
+            <input
+              id="admin-lozinka"
+              type="password"
+              value={adminInput.lozinka}
+              onChange={(e) => setAdminInput({ ...adminInput, lozinka: e.target.value })}
+              className="ui-input"
+            />
+          </div>
+          <button type="button" onClick={handleAddAdmin} className="ui-btn ui-btn-primary w-full">Spremi</button>
         </div>
-      )}
-      {showAdminInput && (
-        <ul className="mt-4">
+      </FormModal>
+      <ul className="space-y-2">
           {admins.map(admin => (
-            <li key={admin.id} className="flex justify-between items-center border-b py-2">
-              {admin.ime}
-              <div>
-                <button onClick={() => handleChangePassword(admin.id)} className="text-blue-500 ml-2">Promijeni lozinku</button>
-                <button onClick={() => handleDeleteAdmin(admin.id)} className="text-red-500 ml-2">Izbriši</button>
+            <li key={admin.id} className="ui-row flex-col sm:flex-row sm:items-center">
+              <span className="font-medium">{admin.ime}</span>
+              <div className="flex gap-2">
+                <button type="button" onClick={() => handleChangePassword(admin.id)} className="ui-btn px-3 py-1 text-xs">Promijeni lozinku</button>
+                <button type="button" onClick={() => handleDeleteAdmin(admin.id)} className="ui-btn ui-btn-danger px-3 py-1 text-xs">Izbriši</button>
               </div>
             </li>
           ))}
-        </ul>
-      )}
+      </ul>
     </div>
   );
 };

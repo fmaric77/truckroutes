@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FaRoute } from 'react-icons/fa'; 
+import FormModal from './FormModal'; 
 
 const logAction = async (action, adminId, routeInfo) => {
   console.log('Logging action:', action, 'Admin ID:', adminId, 'Route Info:', routeInfo);
@@ -17,7 +17,7 @@ const logAction = async (action, adminId, routeInfo) => {
 };
 
 const Route = ({ routes, setRoutes, stores, adminId }) => {
-  const [showRouteInput, setShowRouteInput] = useState(false);
+  const [open, setOpen] = useState(false);
   const [routeInput, setRouteInput] = useState({ opis: '', selectedStores: [''] });
   const [errors, setErrors] = useState({});
 
@@ -52,8 +52,8 @@ const Route = ({ routes, setRoutes, stores, adminId }) => {
     if (res.ok) {
       const newRoute = await res.json();
       setRoutes([...routes, newRoute]);
-      setShowRouteInput(false);
       setRouteInput({ opis: '', selectedStores: [''] });
+      setOpen(false);
       await logAction(`Ruta dodana: ${opis || 'Nema opisa'} (Trgovine: ${storeNames.join(', ')})`, adminId, { opis, selectedStores: storeNames });
     }
   };
@@ -115,66 +115,72 @@ const Route = ({ routes, setRoutes, stores, adminId }) => {
   };
 
   return (
-    <div className="mt-8 text-center">
-      <h2 className="text-xl font-bold">Rute</h2>
-      <FaRoute 
-        onClick={() => setShowRouteInput(!showRouteInput)} 
-        className="text-6xl cursor-pointer mx-auto my-4" 
-      />
-      {showRouteInput && (
-        <div className="mt-4 flex flex-col items-center">
-          <input
-            type="text"
-            placeholder="Opis (opcionalno)"
-            value={routeInput.opis}
-            onChange={(e) => setRouteInput({ ...routeInput, opis: e.target.value })}
-            className="border p-2 mb-2 w-full max-w-md"
-            style={{ backgroundColor: 'black', color: 'white' }}
-          />
+    <div>
+      <div className="mb-4 flex justify-end">
+        <button type="button" onClick={() => setOpen(true)} className="ui-btn ui-btn-primary">Dodaj rutu</button>
+      </div>
+      <FormModal open={open} title="Nova ruta" onClose={() => setOpen(false)}>
+        <div className="space-y-3">
+          <div>
+            <label className="ui-label" htmlFor="ruta-opis">Opis</label>
+            <input
+              id="ruta-opis"
+              type="text"
+              placeholder="Opcionalno"
+              value={routeInput.opis}
+              onChange={(e) => setRouteInput({ ...routeInput, opis: e.target.value })}
+              className="ui-input"
+            />
+          </div>
           {routeInput.selectedStores.map((store, index) => (
-            <div key={index} className="flex items-center mb-2 w-full max-w-md">
+            <div key={index} className="flex items-center gap-2">
               <select
+                aria-label={`Trgovina ${index + 1}`}
                 value={store}
                 onChange={(e) => handleStoreChange(index, e.target.value)}
-                className="border p-2 mr-2 w-full bg-black text-white"
+                className="ui-input"
               >
                 <option value="">Odaberi trgovinu</option>
-                {stores.map(store => (
-                  <option key={store.id} value={store.id}>
-                    {store.ime_trgovine}
+                {stores.map(storeOption => (
+                  <option key={storeOption.id} value={storeOption.id}>
+                    {storeOption.ime_trgovine}
                   </option>
                 ))}
               </select>
-              <span onClick={() => handleRemoveStoreField(index)} className="text-red-500 cursor-pointer">
+              <button type="button" onClick={() => handleRemoveStoreField(index)} className="ui-btn ui-btn-danger shrink-0 px-3 py-2 text-xs">
                 Ukloni
-              </span>
+              </button>
             </div>
           ))}
-          {errors.selectedStores && <p className="text-red-500">{errors.selectedStores}</p>}
-          <button onClick={handleAddStoreField} className="text-blue-500 ml-2">
-            Dodaj trgovinu
-          </button>
-          <button onClick={handleAddRoute} className="text-green-500 ml-2">
-            Dodaj rutu
-          </button>
+          {errors.selectedStores && <p className="text-sm text-rose-300">{errors.selectedStores}</p>}
+          <div className="flex gap-2">
+            <button type="button" onClick={handleAddStoreField} className="ui-btn flex-1">
+              Dodaj trgovinu
+            </button>
+            <button type="button" onClick={handleAddRoute} className="ui-btn ui-btn-primary flex-1">
+              Spremi
+            </button>
+          </div>
+          {errors.submit && <p className="text-sm text-rose-300">{errors.submit}</p>}
         </div>
-      )}
-      {errors.submit && <p className="text-red-500 mt-4">{errors.submit}</p>}
-      {showRouteInput && (
-        <ul className="mt-4">
+      </FormModal>
+      <ul className="space-y-2">
+          {routes.length === 0 && <li className="text-sm text-slate-400">Nema ruta.</li>}
           {routes.map(route => (
-            <li key={route.id} className="flex justify-between items-center border-b py-2">
-              {route.ruta.split(', ').map(storeName => {
-                const store = stores.find(s => s.ime_trgovine === storeName);
-                return store ? `${store.ime_trgovine}, ${store.adresa}` : storeName;
-              }).join(' | ')} - {route.opis || 'Nema opisa'}
-              <span onClick={() => handleRemoveRoute(route.id)} className="text-red-500 cursor-pointer ml-2">
-                Ukloni
+            <li key={route.id} className="ui-row text-sm">
+              <span>
+                {(route.ruta || '').split(', ').map(storeName => {
+                  const store = stores.find(s => s.ime_trgovine === storeName);
+                  return store ? `${store.ime_trgovine}, ${store.adresa}` : storeName;
+                }).join(' | ')}
+                <span className="mt-0.5 block text-xs text-slate-400">{route.opis || 'Nema opisa'}</span>
               </span>
+              <button type="button" onClick={() => handleRemoveRoute(route.id)} className="ui-btn ui-btn-danger shrink-0 px-3 py-1 text-xs">
+                Ukloni
+              </button>
             </li>
           ))}
-        </ul>
-      )}
+      </ul>
     </div>
   );
 };

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
+import AdminShell from '../AdminShell';
 
 const PovijestPutovanja = () => {
   const [putovanja, setPutovanja] = useState([]);
@@ -27,7 +27,7 @@ const PovijestPutovanja = () => {
 
       const response = await fetch(`/api/povijestputovanja?${queryParams.toString()}`);
       const data = await response.json();
-      setPutovanja(data);
+      setPutovanja(Array.isArray(data) ? data : []);
     };
 
     fetchPutovanja();
@@ -51,38 +51,36 @@ const PovijestPutovanja = () => {
   };
 
   return (
-    <div className="p-4 sm:p-8 bg-gray-900 min-h-screen text-white">
-      <div className="max-w-7xl mx-auto bg-gray-800 shadow-lg rounded-lg p-4 sm:p-6">
-        <h1 className="text-2xl sm:text-3xl font-extrabold mb-4 sm:mb-6 text-center text-white">Povijest Putovanja</h1>
-        <Link legacyBehavior href="/admin">
-          <a className="text-blue-400 hover:underline">Nazad</a>
-        </Link>
-
-        {/* Filter Inputs */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mt-4">
+    <AdminShell title="Povijest putovanja">
+      {() => (
+        <>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
           <input
             type="text"
             name="OIB"
             value={filters.OIB}
             onChange={handleFilterChange}
             placeholder="OIB"
-            className="p-2 bg-gray-700 text-white rounded"
+            aria-label="OIB"
+            className="ui-input"
           />
           <input
             type="text"
             name="ime_vozaca"
             value={filters.ime_vozaca}
             onChange={handleFilterChange}
-            placeholder="Ime Vozača"
-            className="p-2 bg-gray-700 text-white rounded"
+            placeholder="Ime vozača"
+            aria-label="Ime vozača"
+            className="ui-input"
           />
           <input
             type="text"
             name="prezime_vozaca"
             value={filters.prezime_vozaca}
             onChange={handleFilterChange}
-            placeholder="Prezime Vozača"
-            className="p-2 bg-gray-700 text-white rounded"
+            placeholder="Prezime vozača"
+            aria-label="Prezime vozača"
+            className="ui-input"
           />
           <input
             type="text"
@@ -90,7 +88,8 @@ const PovijestPutovanja = () => {
             value={filters.registracija}
             onChange={handleFilterChange}
             placeholder="Registracija"
-            className="p-2 bg-gray-700 text-white rounded"
+            aria-label="Registracija"
+            className="ui-input"
           />
           <input
             type="text"
@@ -98,39 +97,40 @@ const PovijestPutovanja = () => {
             value={filters.ruta}
             onChange={handleFilterChange}
             placeholder="Ruta"
-            className="p-2 bg-gray-700 text-white rounded"
+            aria-label="Ruta"
+            className="ui-input"
           />
           <input
             type="date"
             name="datum"
             value={filters.datum}
             onChange={handleFilterChange}
-            className="p-2 bg-gray-700 text-white rounded"
+            aria-label="Datum"
+            className="ui-input"
           />
         </div>
 
-        {/* Data Table */}
-        <div className="overflow-x-auto mt-4">
-          <table className="min-w-full bg-gray-800 text-white">
+        <div className="ui-card mt-6 overflow-x-auto">
+          <table className="min-w-full text-sm">
             <thead>
-              <tr>
-                <th className="py-2 px-4 border-b border-gray-700">OIB</th>
-                <th className="py-2 px-4 border-b border-gray-700">Ime Vozača</th>
-                <th className="py-2 px-4 border-b border-gray-700">Prezime Vozača</th>
-                <th className="py-2 px-4 border-b border-gray-700">Registracija</th>
-                <th className="py-2 px-4 border-b border-gray-700">Ruta</th>
-                <th className="py-2 px-4 border-b border-gray-700">Datum</th>
+              <tr className="text-left text-xs uppercase tracking-wide text-slate-400">
+                <th className="px-4 py-3 font-medium">OIB</th>
+                <th className="px-4 py-3 font-medium">Ime</th>
+                <th className="px-4 py-3 font-medium">Prezime</th>
+                <th className="px-4 py-3 font-medium">Registracija</th>
+                <th className="px-4 py-3 font-medium">Ruta</th>
+                <th className="px-4 py-3 font-medium">Datum</th>
               </tr>
             </thead>
             <tbody>
-              {putovanja.map((putovanje, index) => (
-                <tr key={index} className="hover:bg-gray-700">
-                  <td className="py-2 px-4 border-b border-gray-700">{putovanje.OIB}</td>
-                  <td className="py-2 px-4 border-b border-gray-700">{putovanje.ime_vozaca}</td>
-                  <td className="py-2 px-4 border-b border-gray-700">{putovanje.prezime_vozaca}</td>
-                  <td className="py-2 px-4 border-b border-gray-700">{putovanje.registracija}</td>
-                  <td className="py-2 px-4 border-b border-gray-700">{putovanje.ruta}</td>
-                  <td className="py-2 px-4 border-b border-gray-700">
+              {Array.isArray(putovanja) && putovanja.map((putovanje, index) => (
+                <tr key={index} className="border-t border-white/5 hover:bg-white/5">
+                  <td className="px-4 py-3">{putovanje.OIB}</td>
+                  <td className="px-4 py-3">{putovanje.ime_vozaca}</td>
+                  <td className="px-4 py-3">{putovanje.prezime_vozaca}</td>
+                  <td className="px-4 py-3 font-mono">{putovanje.registracija}</td>
+                  <td className="px-4 py-3">{putovanje.ruta}</td>
+                  <td className="px-4 py-3 text-slate-300">
                     {formatDate(putovanje.datum)}
                   </td>
                 </tr>
@@ -138,8 +138,9 @@ const PovijestPutovanja = () => {
             </tbody>
           </table>
         </div>
-      </div>
-    </div>
+        </>
+      )}
+    </AdminShell>
   );
 };
 

@@ -2,7 +2,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
+import AdminShell from '../AdminShell';
 
 const Logs = () => {
   const [logs, setLogs] = useState([]);
@@ -11,41 +11,37 @@ const Logs = () => {
     const fetchLogs = async () => {
       const response = await fetch('/api/logs');
       const data = await response.json();
-      setLogs(data);
+      setLogs(Array.isArray(data) ? data : []);
     };
 
     fetchLogs();
   }, []);
 
   return (
-    <div className="p-8 bg-gray-900 min-h-screen text-white">
-      <div className="max-w-7xl mx-auto bg-gray-800 shadow-lg rounded-lg p-6">
-        <h1 className="text-3xl font-extrabold mb-6 text-center text-white">Povijest radnji administratora</h1>
-        <Link legacyBehavior href="/admin">
-          <a className="text-blue-400 hover:underline">Nazad</a>
-        </Link>
-        <div className="overflow-x-auto mt-4">
-          <table className="min-w-full bg-gray-800 text-white">
+    <AdminShell title="Povijest radnji" logsLink={false}>
+      {() => (
+        <div className="ui-card overflow-x-auto">
+          <table className="min-w-full text-sm">
             <thead>
-              <tr>
-                <th className="py-2 px-4 border-b border-gray-700">Oznaka administratora</th>
-                <th className="py-2 px-4 border-b border-gray-700">Radnja</th>
-                <th className="py-2 px-4 border-b border-gray-700">Vremenska oznaka</th>
+              <tr className="text-left text-xs uppercase tracking-wide text-slate-400">
+                <th className="px-4 py-3 font-medium">Administrator</th>
+                <th className="px-4 py-3 font-medium">Radnja</th>
+                <th className="px-4 py-3 font-medium">Vrijeme</th>
               </tr>
             </thead>
             <tbody>
-              {logs.map((log, index) => (
-                <tr key={index} className="hover:bg-gray-700">
-                  <td className="py-2 px-4 border-b border-gray-700">{log.admin_id}</td>
-                  <td className="py-2 px-4 border-b border-gray-700">{log.action}</td>
-                  <td className="py-2 px-4 border-b border-gray-700">{log.timestamp}</td>
+              {Array.isArray(logs) && logs.map((log, index) => (
+                <tr key={index} className="border-t border-white/5 hover:bg-white/5">
+                  <td className="px-4 py-3">{log.admin_id}</td>
+                  <td className="px-4 py-3">{log.action}</td>
+                  <td className="px-4 py-3 text-slate-300">{log.timestamp}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-      </div>
-    </div>
+      )}
+    </AdminShell>
   );
 };
 

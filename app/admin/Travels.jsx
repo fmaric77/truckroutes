@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import Link from 'next/link';
+import FormModal from './FormModal';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBook, faTasks } from '@fortawesome/free-solid-svg-icons';
+import { faBook } from '@fortawesome/free-solid-svg-icons';
 
 const logAction = async (action, adminId, putovanjeInfo) => {
   console.log('Logging action:', action, 'Admin ID:', adminId, 'Putovanje Info:', putovanjeInfo);
@@ -19,8 +20,7 @@ const logAction = async (action, adminId, putovanjeInfo) => {
 };
 
 const Travels = ({ putovanja, setPutovanja, drivers, trucks, spremneRute, adminId }) => {
-  const [showPutovanja, setShowPutovanja] = useState(false);
-  const [showPutovanjeInput, setShowPutovanjeInput] = useState(false);
+  const [open, setOpen] = useState(false);
   const [putovanjeInput, setPutovanjeInput] = useState({ datum: '', vozac_id: '', kamion_id: '', ruta_id: '' });
   const [errors, setErrors] = useState({});
 
@@ -77,8 +77,7 @@ const Travels = ({ putovanja, setPutovanja, drivers, trucks, spremneRute, adminI
         const updatedPutovanja = await putovanjaRes.json();
         setPutovanja(updatedPutovanja);
         setPutovanjeInput({ datum: '', vozac_id: '', kamion_id: '', ruta_id: '' });
-        setShowPutovanjeInput(false);
-        setShowPutovanja(false); 
+        setOpen(false); 
   
         //Zabilježi akciju
         const newPutovanje = updatedPutovanja[updatedPutovanja.length - 1];
@@ -132,90 +131,100 @@ const Travels = ({ putovanja, setPutovanja, drivers, trucks, spremneRute, adminI
   };
 
   return (
-    <div className="mt-8">
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl font-bold">Putovanja</h2>
-        <FontAwesomeIcon
-          icon={faTasks}
-          className="text-blue-500 text-4xl cursor-pointer mx-4"
-          onClick={() => {
-            setShowPutovanjeInput(!showPutovanjeInput);
-            setShowPutovanja(!showPutovanja);
-          }}
-        />
+    <div>
+      <div className="mb-4 flex flex-wrap justify-end gap-2">
+        <button type="button" onClick={() => setOpen(true)} className="ui-btn ui-btn-primary">Novo putovanje</button>
         <Link legacyBehavior href="/admin/povijestputovanja">
-          <a className="bg-green-500 text-white p-2 rounded items-center">
-            <FontAwesomeIcon icon={faBook} className="mr-2" />
+          <a className="ui-btn">
+            <FontAwesomeIcon icon={faBook} />
             Povijest
           </a>
         </Link>
       </div>
-      {showPutovanjeInput && (
-        <div className="mt-4">
-          <input
-            type="date"
-            value={putovanjeInput.datum}
-            onChange={(e) => setPutovanjeInput({ ...putovanjeInput, datum: e.target.value })}
-            className="border p-2 mr-2 bg-black text-white"
-          />
-          {errors.datum && <p className="text-red-500">{errors.datum}</p>}
-          <select
-            value={putovanjeInput.vozac_id}
-            onChange={(e) => setPutovanjeInput({ ...putovanjeInput, vozac_id: e.target.value })}
-            className="border p-2 mr-2 bg-black text-white"
-          >
-            <option value="">Odaberi vozača</option>
-            {drivers.filter(driver => driver.status !== 'neaktivan').map(driver => (
-              <option key={driver.id} value={driver.id}>
-                {driver.ime_vozaca} {driver.prezime_vozaca}
-              </option>
-            ))}
-          </select>
-          {errors.vozac_id && <p className="text-red-500">{errors.vozac_id}</p>}
-          <select
-            value={putovanjeInput.kamion_id}
-            onChange={(e) => setPutovanjeInput({ ...putovanjeInput, kamion_id: e.target.value })}
-            className="border p-2 mr-2 bg-black text-white"
-          >
-            <option value="">Odaberi kamion</option>
-            {trucks
-              .filter(truck => truck.status === 'Dostupan')
-              .map(truck => (
-                <option key={truck.id} value={truck.id}>
-                  {truck.registracija}
+      <FormModal open={open} title="Novo putovanje" onClose={() => setOpen(false)} wide>
+      <div className="grid gap-3 md:grid-cols-2">
+          <div>
+            <label className="ui-label" htmlFor="putovanje-datum">Datum</label>
+            <input
+              id="putovanje-datum"
+              type="date"
+              value={putovanjeInput.datum}
+              onChange={(e) => setPutovanjeInput({ ...putovanjeInput, datum: e.target.value })}
+              className="ui-input"
+            />
+            {errors.datum && <p className="mt-1 text-sm text-rose-300">{errors.datum}</p>}
+          </div>
+          <div>
+            <label className="ui-label" htmlFor="putovanje-vozac">Vozač</label>
+            <select
+              id="putovanje-vozac"
+              value={putovanjeInput.vozac_id}
+              onChange={(e) => setPutovanjeInput({ ...putovanjeInput, vozac_id: e.target.value })}
+              className="ui-input"
+            >
+              <option value="">Odaberi vozača</option>
+              {drivers.filter(driver => driver.status !== 'neaktivan').map(driver => (
+                <option key={driver.id} value={driver.id}>
+                  {driver.ime_vozaca} {driver.prezime_vozaca}
                 </option>
               ))}
-          </select>
-          {errors.kamion_id && <p className="text-red-500">{errors.kamion_id}</p>}
-          <select
-            value={putovanjeInput.ruta_id}
-            onChange={(e) => setPutovanjeInput({ ...putovanjeInput, ruta_id: e.target.value })}
-            className="border p-2 mr-2 bg-black text-white"
-          >
-            <option value="">Odaberi rutu</option>
-            {spremneRute.map(ruta => (
-              <option key={ruta.id} value={ruta.id}>
-                {ruta.ruta}
-              </option>
-            ))}
-          </select>
-          {errors.ruta_id && <p className="text-red-500">{errors.ruta_id}</p>}
-          <button onClick={handleAddPutovanje} className="bg-green-500 text-white p-2 rounded ml-2">
-            Pošalji
+            </select>
+            {errors.vozac_id && <p className="mt-1 text-sm text-rose-300">{errors.vozac_id}</p>}
+          </div>
+          <div>
+            <label className="ui-label" htmlFor="putovanje-kamion">Kamion</label>
+            <select
+              id="putovanje-kamion"
+              value={putovanjeInput.kamion_id}
+              onChange={(e) => setPutovanjeInput({ ...putovanjeInput, kamion_id: e.target.value })}
+              className="ui-input"
+            >
+              <option value="">Odaberi kamion</option>
+              {trucks
+                .filter(truck => truck.status === 'Dostupan')
+                .map(truck => (
+                  <option key={truck.id} value={truck.id}>
+                    {truck.registracija}{truck.skladiste ? ` · ${truck.skladiste}` : ' · nije na skladištu'}
+                  </option>
+                ))}
+            </select>
+            {errors.kamion_id && <p className="mt-1 text-sm text-rose-300">{errors.kamion_id}</p>}
+          </div>
+          <div>
+            <label className="ui-label" htmlFor="putovanje-ruta">Ruta</label>
+            <select
+              id="putovanje-ruta"
+              value={putovanjeInput.ruta_id}
+              onChange={(e) => setPutovanjeInput({ ...putovanjeInput, ruta_id: e.target.value })}
+              className="ui-input"
+            >
+              <option value="">Odaberi rutu</option>
+              {spremneRute.map(ruta => (
+                <option key={ruta.id} value={ruta.id}>
+                  {ruta.ruta}
+                </option>
+              ))}
+            </select>
+            {errors.ruta_id && <p className="mt-1 text-sm text-rose-300">{errors.ruta_id}</p>}
+          </div>
+          <button type="button" onClick={handleAddPutovanje} className="ui-btn ui-btn-primary md:col-span-2">
+            Spremi
           </button>
-        </div>
-      )}
-      {errors.submit && <p className="text-red-500 mt-4">{errors.submit}</p>}
-      {showPutovanja && (
-        <ul className="mt-4">
+        {errors.submit && <p className="text-sm text-rose-300 md:col-span-2">{errors.submit}</p>}
+      </div>
+      </FormModal>
+      <ul className="space-y-2">
+          {putovanja.length === 0 && <li className="text-sm text-slate-400">Nema putovanja.</li>}
           {putovanja.map(p => (
-            <li key={p.id} className="flex justify-between items-center border-b py-2">
-              {p.datum} - {p.vozac_ime} {p.vozac_prezime} - {p.registracija} - {p.ruta}
-              <button onClick={() => handleRemovePutovanje(p.id)} className="text-red-500 ml-2">Ukloni</button>
+            <li key={p.id} className="ui-row text-sm">
+              <span>
+                {p.datum} · {p.vozac_ime} {p.vozac_prezime}
+                <span className="mt-0.5 block text-xs text-slate-400">{p.registracija} · {p.ruta}</span>
+              </span>
+              <button type="button" onClick={() => handleRemovePutovanje(p.id)} className="ui-btn ui-btn-danger shrink-0 px-3 py-1 text-xs">Ukloni</button>
             </li>
           ))}
-        </ul>
-      )}
+      </ul>
     </div>
   );
 };

@@ -15,7 +15,26 @@ interface Vozac extends RowDataPacket {
 export async function GET() {
   const connection = await getConnection();
   try {
-    const [rows] = await connection.execute<Vozac[]>('SELECT * FROM Vozaci');
+    const [rows] = await connection.execute<Vozac[]>(`
+      SELECT
+        v.*,
+        (
+          SELECT k.registracija
+          FROM Putovanja p
+          JOIN Kamioni k ON k.id = p.kamion_id
+          WHERE p.vozac_id = v.id AND p.datum >= CURDATE()
+          ORDER BY p.datum ASC
+          LIMIT 1
+        ) AS kamion,
+        (
+          SELECT DATE_FORMAT(p.datum, '%d.%m.%Y')
+          FROM Putovanja p
+          WHERE p.vozac_id = v.id AND p.datum >= CURDATE()
+          ORDER BY p.datum ASC
+          LIMIT 1
+        ) AS kamion_datum
+      FROM Vozaci v
+    `);
     return NextResponse.json(rows);
   } catch (error) {
     console.error('Error fetching vozaci:', error);

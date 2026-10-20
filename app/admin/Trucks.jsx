@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FaTruck } from 'react-icons/fa'; 
+import FormModal from './FormModal'; 
 
 const logAction = async (action, adminId, truckInfo) => {
   console.log('Logging action:', action, 'Admin ID:', adminId, 'Truck Info:', truckInfo);
@@ -25,9 +25,9 @@ const formatDate = (dateString) => {
 };
 
 const Trucks = ({ trucks, setTrucks, adminId }) => {
-  const [showTruckInput, setShowTruckInput] = useState(false);
   const [truckInput, setTruckInput] = useState({ registracija: '', datum_registracije: '' });
   const [errors, setErrors] = useState({});
+  const [open, setOpen] = useState(false);
 
   const validateTruckInput = () => {
     const newErrors = {};
@@ -69,6 +69,7 @@ const Trucks = ({ trucks, setTrucks, adminId }) => {
           setTruckInput({ registracija: '', datum_registracije: '' });
           await logAction(`Kamion dodan: ${registracija}`, adminId, { registracija, datum_registracije });
           setErrors({});
+          setOpen(false);
         }
       } else {
         const errorData = await res.json();
@@ -117,48 +118,55 @@ const Trucks = ({ trucks, setTrucks, adminId }) => {
   };  
 
   return (
-    <div className="mt-8 text-center">
-      <h2 className="text-xl font-bold">Kamioni</h2>
-      <FaTruck 
-        onClick={() => setShowTruckInput(!showTruckInput)} 
-        className="text-6xl cursor-pointer mx-auto my-4" 
-      />
-      {showTruckInput && (
-        <div className="mt-4 flex flex-col items-center">
-          <input
-            type="text"
-            placeholder="Registracija"
-            value={truckInput.registracija}
-            onChange={(e) => setTruckInput({ ...truckInput, registracija: e.target.value })}
-            className="border p-2 mb-2 w-full max-w-md"
-            style={{ backgroundColor: 'black', color: 'white' }}
-          />
-          {errors.registracija && <p className="text-red-500">{errors.registracija}</p>}
-          <input
-            type="date"
-            placeholder="Datum registracije"
-            value={truckInput.datum_registracije}
-            onChange={(e) => setTruckInput({ ...truckInput, datum_registracije: e.target.value })}
-            className="border p-2 mb-2 w-full max-w-md"
-            style={{ backgroundColor: 'black', color: 'white' }}
-          />
-          {errors.datum_registracije && <p className="text-red-500">{errors.datum_registracije}</p>}
-          <button onClick={handleAddTruck} className="text-green-500 ml-2">
-            Dodaj
-          </button>
+    <div>
+      <div className="mb-4 flex justify-end">
+        <button type="button" onClick={() => setOpen(true)} className="ui-btn ui-btn-primary">Dodaj kamion</button>
+      </div>
+      <FormModal open={open} title="Novi kamion" onClose={() => setOpen(false)}>
+        <div className="space-y-3">
+          <div>
+            <label className="ui-label" htmlFor="kamion-registracija">Registracija</label>
+            <input
+              id="kamion-registracija"
+              type="text"
+              value={truckInput.registracija}
+              onChange={(e) => setTruckInput({ ...truckInput, registracija: e.target.value })}
+              className="ui-input"
+            />
+            {errors.registracija && <p className="mt-1 text-sm text-rose-300">{errors.registracija}</p>}
+          </div>
+          <div>
+            <label className="ui-label" htmlFor="kamion-datum">Datum registracije</label>
+            <input
+              id="kamion-datum"
+              type="date"
+              value={truckInput.datum_registracije}
+              onChange={(e) => setTruckInput({ ...truckInput, datum_registracije: e.target.value })}
+              className="ui-input"
+            />
+            {errors.datum_registracije && <p className="mt-1 text-sm text-rose-300">{errors.datum_registracije}</p>}
+          </div>
+          {errors.submit && <p className="text-sm text-rose-300">{errors.submit}</p>}
+          <button type="button" onClick={handleAddTruck} className="ui-btn ui-btn-primary w-full">Spremi</button>
         </div>
-      )}
-      {errors.submit && <p className="text-red-500 mt-4">{errors.submit}</p>}
-      {showTruckInput && (
-        <ul className="mt-4">
-          {trucks.map(truck => (
-            <li key={truck.id} className="flex justify-between items-center border-b py-2">
-              {truck.registracija} - {formatDate(truck.datum_registracije)} - {truck.status}
-              <button onClick={() => handleRemoveTruck(truck.id)} className="text-red-500 ml-2">Ukloni</button>
-            </li>
-          ))}
-        </ul>
-      )}
+      </FormModal>
+      <ul className="space-y-2">
+        {trucks.length === 0 && <li className="text-sm text-slate-400">Nema kamiona.</li>}
+        {trucks.map(truck => (
+          <li key={truck.id} className="ui-row text-sm">
+            <span>
+              {truck.registracija} · {formatDate(truck.datum_registracije)} · {truck.status}
+              <span className="mt-0.5 block text-xs text-slate-400">
+                {truck.skladiste ? `Skladište: ${truck.skladiste}` : 'Nije na skladištu'}
+                {truck.rampa ? ` · Rampa ${truck.rampa}` : ''}
+                {' · '}
+                {truck.vozac ? `Vozač: ${truck.vozac}${truck.vozac_datum ? ` · ${truck.vozac_datum}` : ''}` : 'Nema dodijeljenog vozača'}
+              </span>
+            </span>
+            <button type="button" onClick={() => handleRemoveTruck(truck.id)} className="ui-btn ui-btn-danger shrink-0 px-3 py-1 text-xs">Ukloni</button>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 };
